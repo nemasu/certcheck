@@ -1,3 +1,4 @@
+target/
 *.class
 
 # Mobile Tools for Java (J2ME)
@@ -28,4 +29,3 @@ nb-configuration.xml
 *.iml
 *.eml
 .idea/
-
