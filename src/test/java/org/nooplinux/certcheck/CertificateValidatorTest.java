@@ -3,6 +3,7 @@ package org.nooplinux.certcheck;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.junit.Test;
+import org.nooplinux.certcheck.exception.CertificateValidatorException;
 
 import java.io.File;
 import java.io.FileReader;
@@ -20,12 +21,15 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 public class CertificateValidatorTest {
+
+    //PEM
+
     @Test
     public void TestValidKeyAndCert() throws Exception {
         CertificateValidator.withPem( getTestPemFile() ).isValidWithPublicKey( getTestPublicKey() );
     }
 
-    @Test( expected = CertificateValidator.CertificateValidatorException.class )
+    @Test( expected = CertificateValidatorException.class )
     public void TestInvalidKeyAndCert() throws Exception {
         CertificateValidator.withPem( getTestPemFile() ).isValidWithPublicKey( getInvalidTestPublicKey() );
     }
@@ -35,21 +39,21 @@ public class CertificateValidatorTest {
         CertificateValidator.withPem( getTestPemFile() ).isAlgorithmId( "SHA1WITHRSA" );
     }
 
-    @Test( expected = CertificateValidator.CertificateValidatorException.class )
+    @Test( expected = CertificateValidatorException.class )
     public void TestNotBefore() throws Exception {
         Calendar gregorianCalendar = GregorianCalendar.getInstance();
         gregorianCalendar.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
-        gregorianCalendar.set( 2015, 9, 21, 5, 43, 23 );
+        gregorianCalendar.set( 2015, Calendar.OCTOBER, 21, 5, 43, 23 );
         Date date = gregorianCalendar.getTime();
 
         CertificateValidator.withPem( getTestPemFile() ).isValidWithDate( date );
     }
 
-    @Test( expected = CertificateValidator.CertificateValidatorException.class )
+    @Test( expected = CertificateValidatorException.class )
     public void TestNotAfter() throws Exception {
         Calendar gregorianCalendar = GregorianCalendar.getInstance();
         gregorianCalendar.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
-        gregorianCalendar.set( 2016, 9, 20, 5, 43, 25 );
+        gregorianCalendar.set( 2016, Calendar.OCTOBER, 20, 5, 43, 25 );
         Date date = gregorianCalendar.getTime();
 
         CertificateValidator.withPem( getTestPemFile() ).isValidWithDate( date );
@@ -59,16 +63,66 @@ public class CertificateValidatorTest {
     public void TestValidDate() throws Exception {
         Calendar gregorianCalendar = GregorianCalendar.getInstance();
         gregorianCalendar.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
-        gregorianCalendar.set( 2016, 0, 1, 0, 0, 0 );
+        gregorianCalendar.set( 2016, Calendar.JANUARY, 1, 0, 0, 0 );
         Date date = gregorianCalendar.getTime();
 
         CertificateValidator.withPem( getTestPemFile() ).isValidWithDate( date );
     }
 
+    //PKCS 7
+
+    @Test
+    public void TestPKCS7ValidKeyAndCert() throws Exception {
+        CertificateValidator.withPem( getTestPKCS7File() ).isValidWithPublicKey( getTestPublicKey() );
+    }
+
+    @Test( expected = CertificateValidatorException.class )
+    public void TestPKCS7InvalidKeyAndCert() throws Exception {
+        CertificateValidator.withPem( getTestPKCS7File() ).isValidWithPublicKey( getInvalidTestPublicKey() );
+    }
+
+    @Test
+    public void TestPKCS7AlgoId() throws Exception {
+        CertificateValidator.withPem( getTestPKCS7File() ).isAlgorithmId( "SHA1WITHRSA" );
+    }
+
+    @Test( expected = CertificateValidatorException.class )
+    public void TestPKCS7NotBefore() throws Exception {
+        Calendar gregorianCalendar = GregorianCalendar.getInstance();
+        gregorianCalendar.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
+        gregorianCalendar.set( 2015, Calendar.OCTOBER, 21, 5, 43, 23 );
+        Date date = gregorianCalendar.getTime();
+
+        CertificateValidator.withPem( getTestPKCS7File() ).isValidWithDate( date );
+    }
+
+    @Test( expected = CertificateValidatorException.class )
+    public void TestPKCS7NotAfter() throws Exception {
+        Calendar gregorianCalendar = GregorianCalendar.getInstance();
+        gregorianCalendar.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
+        gregorianCalendar.set( 2016, Calendar.OCTOBER, 20, 5, 43, 25 );
+        Date date = gregorianCalendar.getTime();
+
+        CertificateValidator.withPem( getTestPKCS7File() ).isValidWithDate( date );
+    }
+
+    @Test
+    public void TestPKCS7ValidDate() throws Exception {
+        Calendar gregorianCalendar = GregorianCalendar.getInstance();
+        gregorianCalendar.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
+        gregorianCalendar.set( 2016, Calendar.JANUARY, 1, 0, 0, 0 );
+        Date date = gregorianCalendar.getTime();
+
+        CertificateValidator.withPem( getTestPKCS7File() ).isValidWithDate( date );
+    }
+
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        ClassLoader classLoader   = getClass().getClassLoader();
-        URL         publicKeyURL  = classLoader.getResource( "test-certs/domain.tld.invalid.pub" );
-        File        publicKeyFile = new File( publicKeyURL.toURI() );
+        ClassLoader classLoader  = getClass().getClassLoader();
+        URL         publicKeyURL = classLoader.getResource( "test-certs/domain.tld.invalid.pub" );
+        if( publicKeyURL == null ) {
+            throw new RuntimeException( "Cannot find test-certs/domain.tld.invalid.pub resource." );
+        }
+        File publicKeyFile = new File( publicKeyURL.toURI() );
         try( FileReader fileReader = new FileReader( publicKeyFile ) ) {
             PemReader          reader             = new PemReader( fileReader );
             PemObject          pemObject          = reader.readPemObject();
@@ -80,9 +134,12 @@ public class CertificateValidatorTest {
     }
 
     private PublicKey getTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        ClassLoader classLoader   = getClass().getClassLoader();
-        URL         publicKeyURL  = classLoader.getResource( "test-certs/domain.tld.pub" );
-        File        publicKeyFile = new File( publicKeyURL.toURI() );
+        ClassLoader classLoader  = getClass().getClassLoader();
+        URL         publicKeyURL = classLoader.getResource( "test-certs/domain.tld.pub" );
+        if( publicKeyURL == null ) {
+            throw new RuntimeException( "Cannot find test-certs/domain.tld.pub resource." );
+        }
+        File publicKeyFile = new File( publicKeyURL.toURI() );
         try( FileReader fileReader = new FileReader( publicKeyFile ) ) {
             PemReader          reader             = new PemReader( fileReader );
             PemObject          pemObject          = reader.readPemObject();
@@ -96,6 +153,18 @@ public class CertificateValidatorTest {
     private File getTestPemFile() throws URISyntaxException {
         ClassLoader classLoader = getClass().getClassLoader();
         URL         pemFileURL  = classLoader.getResource( "test-certs/domain.tld.pem" );
+        if( pemFileURL == null ) {
+            throw new RuntimeException( "Cannot find test-certs/domain.tld.pem resource." );
+        }
+        return new File( pemFileURL.toURI() );
+    }
+
+    private File getTestPKCS7File() throws URISyntaxException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL         pemFileURL  = classLoader.getResource( "test-certs/domain.tld.p7b" );
+        if( pemFileURL == null ) {
+            throw new RuntimeException( "Cannot find test-certs/domain.tld.p7b resource." );
+        }
         return new File( pemFileURL.toURI() );
     }
 }
