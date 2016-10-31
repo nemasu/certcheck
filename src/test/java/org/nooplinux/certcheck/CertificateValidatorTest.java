@@ -116,6 +116,32 @@ public class CertificateValidatorTest {
         CertificateValidator.withPem( getTestPKCS7File() ).isValidWithDate( date );
     }
 
+    @Test
+    public void TestPEMSubjectPrincipal() throws Exception {
+        CertificateValidator.withPem( getTestPemFile() )
+                            .isAlgorithmId( "sha1withrsa" )
+                            .equalsSubjectEmail( "admin@domain.tld" )
+                            .equalsSubjectCommonName( "domain.tld" )
+                            .equalsSubjectOrganizationalUnit( "DevSec" )
+                            .equalsSubjectOrganization( "TestCompany1" )
+                            .equalsSubjectLocality( "Shibuya" )
+                            .equalsSubjectState( "Tokyo" )
+                            .equalsSubjectCountry( "JP" );
+    }
+
+    @Test
+    public void TestPEMIssuerPrincipal() throws Exception {
+        CertificateValidator.withPem( getTestPemFile() )
+                            .isAlgorithmId( "sha1withrsa" )
+                            .equalsIssuerEmail( "admin@domain.tld" )
+                            .equalsIssuerCommonName( "domain.tld" )
+                            .equalsIssuerOrganizationalUnit( "DevSec" )
+                            .equalsIssuerOrganization( "TestCompany1" )
+                            .equalsIssuerLocality( "Shibuya" )
+                            .equalsIssuerState( "Tokyo" )
+                            .equalsIssuerCountry( "JP" );
+    }
+
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         ClassLoader classLoader  = getClass().getClassLoader();
         URL         publicKeyURL = classLoader.getResource( "test-certs/domain.tld.invalid.pub" );
