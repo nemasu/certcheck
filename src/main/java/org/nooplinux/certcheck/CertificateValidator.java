@@ -31,6 +31,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -158,7 +159,7 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator isAlgorithmId( String algorithmId ) {
+    public CertificateValidator equalsAlgorithmId( String algorithmId ) {
 
         if( !algorithmId.equalsIgnoreCase( x509Certificate.getSigAlgName() ) ) {
             throw new CertificateValidatorException( x509Certificate.getSigAlgName() + " does not match " + algorithmId );
@@ -177,236 +178,180 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator hasSubjectEmail( List<String> k ) {
-        if( !subjectPrincipal.get( "E" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject Email " + subjectPrincipal.get( "E" ) + " does not contain " + k );
+    public CertificateValidator equalsSubjectEmail( List<String> k ) {
+        if( !subjectPrincipal.get( "E" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject Email " + subjectPrincipal.get( "E" ) + " does not equal " + k );
 
         }
         return this;
     }
 
-    public CertificateValidator hasSubjectCommonName( List<String> k ) {
-        if( !subjectPrincipal.get( "CN" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject CommonName " + subjectPrincipal.get( "CN" ) + " does not contain " + k );
+    public CertificateValidator equalsSubjectCommonName( List<String> k ) {
+        if( !subjectPrincipal.get( "CN" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject CommonName " + subjectPrincipal.get( "CN" ) + " does not equal " + k );
 
         }
         return this;
     }
 
-    public CertificateValidator hasSubjectOrganizationalUnit( List<String> k ) {
-        if( !subjectPrincipal.get( "OU" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject OrganizationalUnit " + subjectPrincipal.get( "OU" ) + " does not contain " + k );
+    public CertificateValidator equalsSubjectOrganizationalUnit( List<String> k ) {
+        if( !subjectPrincipal.get( "OU" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject OrganizationalUnit " + subjectPrincipal.get( "OU" ) + " does not equal " + k );
 
         }
         return this;
     }
 
-    public CertificateValidator hasSubjectOrganization( List<String> k ) {
-        if( !subjectPrincipal.get( "O" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject Organization " + subjectPrincipal.get( "E" ) + " does not contain " + k );
-
-        }
-        return this;
-    }
-
-    //Locality, City
-    public CertificateValidator hasSubjectLocality( List<String> k ) {
-        if( !subjectPrincipal.get( "L" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject Locality " + subjectPrincipal.get( "L" ) + " does not contain " + k );
-
-        }
-        return this;
-    }
-
-    //State, County, Region
-    public CertificateValidator hasSubjectState( List<String> k ) {
-        if( !subjectPrincipal.get( "ST" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject State " + subjectPrincipal.get( "ST" ) + " does not contain " + k );
-
-        }
-        return this;
-    }
-
-    public CertificateValidator hasSubjectCountry( List<String> k ) {
-        if( !subjectPrincipal.get( "C" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject Country " + subjectPrincipal.get( "C" ) + " does not contain " + k );
-
-        }
-        return this;
-    }
-
-    public CertificateValidator hasIssuerEmail( List<String> k ) {
-        if( !issuerPrincipal.get( "E" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer Email " + issuerPrincipal.get( "E" ) + " does not contain " + k );
-
-        }
-        return this;
-    }
-
-    public CertificateValidator hasIssuerCommonName( List<String> k ) {
-        if( !issuerPrincipal.get( "CN" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer CommonName " + issuerPrincipal.get( "CN" ) + " does not contain " + k );
-
-        }
-        return this;
-    }
-
-    public CertificateValidator hasIssuerOrganizationalUnit( List<String> k ) {
-        if( !issuerPrincipal.get( "OU" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer OrganizationalUnit " + issuerPrincipal.get( "OU" ) + " does not contain " + k );
-
-        }
-        return this;
-    }
-
-    public CertificateValidator hasIssuerOrganization( List<String> k ) {
-        if( !issuerPrincipal.get( "O" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer Organization " + issuerPrincipal.get( "E" ) + " does not contain " + k );
+    public CertificateValidator equalsSubjectOrganization( List<String> k ) {
+        if( !subjectPrincipal.get( "O" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject Organization " + subjectPrincipal.get( "E" ) + " does not equal " + k );
 
         }
         return this;
     }
 
     //Locality, City
-    public CertificateValidator hasIssuerLocality( List<String> k ) {
-        if( !issuerPrincipal.get( "L" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer Locality " + issuerPrincipal.get( "L" ) + " does not contain " + k );
+    public CertificateValidator equalsSubjectLocality( List<String> k ) {
+        if( !subjectPrincipal.get( "L" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject Locality " + subjectPrincipal.get( "L" ) + " does not equal " + k );
 
         }
         return this;
     }
 
     //State, County, Region
-    public CertificateValidator hasIssuerState( List<String> k ) {
-        if( !issuerPrincipal.get( "ST" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer State " + issuerPrincipal.get( "ST" ) + " does not contain " + k );
+    public CertificateValidator equalsSubjectState( List<String> k ) {
+        if( !subjectPrincipal.get( "ST" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject State " + subjectPrincipal.get( "ST" ) + " does not equal " + k );
 
         }
         return this;
     }
 
-    public CertificateValidator hasIssuerCountry( List<String> k ) {
-        if( !issuerPrincipal.get( "C" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer Country " + issuerPrincipal.get( "C" ) + " does not contain " + k );
+    public CertificateValidator equalsSubjectCountry( List<String> k ) {
+        if( !subjectPrincipal.get( "C" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject Country " + subjectPrincipal.get( "C" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsIssuerEmail( List<String> k ) {
+        if( !issuerPrincipal.get( "E" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Issuer Email " + issuerPrincipal.get( "E" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsIssuerCommonName( List<String> k ) {
+        if( !issuerPrincipal.get( "CN" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Issuer CommonName " + issuerPrincipal.get( "CN" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsIssuerOrganizationalUnit( List<String> k ) {
+        if( !issuerPrincipal.get( "OU" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Issuer OrganizationalUnit " + issuerPrincipal.get( "OU" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsIssuerOrganization( List<String> k ) {
+        if( !issuerPrincipal.get( "O" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Issuer Organization " + issuerPrincipal.get( "E" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    //Locality, City
+    public CertificateValidator equalsIssuerLocality( List<String> k ) {
+        if( !issuerPrincipal.get( "L" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Issuer Locality " + issuerPrincipal.get( "L" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    //State, County, Region
+    public CertificateValidator equalsIssuerState( List<String> k ) {
+        if( !issuerPrincipal.get( "ST" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Issuer State " + issuerPrincipal.get( "ST" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsIssuerCountry( List<String> k ) {
+        if( !issuerPrincipal.get( "C" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Issuer Country " + issuerPrincipal.get( "C" ) + " does not equal " + k );
 
         }
         return this;
     }
 
     public CertificateValidator equalsSubjectEmail( String k ) {
-        if( subjectPrincipal.get( "E" ).size() != 1 && !subjectPrincipal.get( "E" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject Email " + subjectPrincipal.get( "E" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsSubjectEmail( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsSubjectCommonName( String k ) {
-        if( subjectPrincipal.get( "CN" ).size() != 1 && !subjectPrincipal.get( "CN" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject CommonName " + subjectPrincipal.get( "CN" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsSubjectCommonName( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsSubjectOrganizationalUnit( String k ) {
-        if( subjectPrincipal.get( "OU" ).size() != 1 && !subjectPrincipal.get( "OU" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject OrganizationalUnit " + subjectPrincipal.get( "OU" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsSubjectOrganizationalUnit( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsSubjectOrganization( String k ) {
-        if( subjectPrincipal.get( "O" ).size() != 1 && !subjectPrincipal.get( "O" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject Organization " + subjectPrincipal.get( "E" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsSubjectOrganization( Arrays.asList( k ) );
     }
 
     //Locality, City
     public CertificateValidator equalsSubjectLocality( String k ) {
-        if( subjectPrincipal.get( "L" ).size() != 1 && !subjectPrincipal.get( "L" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject Locality " + subjectPrincipal.get( "L" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsSubjectLocality( Arrays.asList( k ) );
     }
 
     //State, County, Region
     public CertificateValidator equalsSubjectState( String k ) {
-        if( subjectPrincipal.get( "ST" ).size() != 1 && !subjectPrincipal.get( "ST" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject State " + subjectPrincipal.get( "ST" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsSubjectState( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsSubjectCountry( String k ) {
-        if( subjectPrincipal.get( "C" ).size() != 1 && !subjectPrincipal.get( "C" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Subject Country " + subjectPrincipal.get( "C" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsSubjectCountry( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsIssuerEmail( String k ) {
-        if( issuerPrincipal.get( "E" ).size() != 1 && issuerPrincipal.get( "E" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer Email " + issuerPrincipal.get( "E" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsIssuerEmail( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsIssuerCommonName( String k ) {
-        if( issuerPrincipal.get( "CN" ).size() != 1 && issuerPrincipal.get( "CN" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer CommonName " + issuerPrincipal.get( "CN" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsIssuerCommonName( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsIssuerOrganizationalUnit( String k ) {
-        if( issuerPrincipal.get( "OU" ).size() != 1 && issuerPrincipal.get( "OU" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer OrganizationalUnit " + issuerPrincipal.get( "OU" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsIssuerOrganizationalUnit( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsIssuerOrganization( String k ) {
-        if( issuerPrincipal.get( "O" ).size() != 1 && issuerPrincipal.get( "O" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer Organization " + issuerPrincipal.get( "E" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsIssuerOrganization( Arrays.asList( k ) );
     }
 
     //Locality, City
     public CertificateValidator equalsIssuerLocality( String k ) {
-        if( issuerPrincipal.get( "L" ).size() != 1 && issuerPrincipal.get( "L" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer Locality " + issuerPrincipal.get( "L" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsIssuerLocality( Arrays.asList( k ) );
     }
 
     //State, County, Region
     public CertificateValidator equalsIssuerState( String k ) {
-        if( issuerPrincipal.get( "ST" ).size() != 1 && issuerPrincipal.get( "ST" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer State " + issuerPrincipal.get( "ST" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsIssuerState( Arrays.asList( k ) );
     }
 
     public CertificateValidator equalsIssuerCountry( String k ) {
-        if( issuerPrincipal.get( "C" ).size() != 1 && issuerPrincipal.get( "C" ).contains( k ) ) {
-            throw new CertificateValidatorException( "Issuer Country " + issuerPrincipal.get( "C" ) + " does not just contain " + k );
-
-        }
-        return this;
+        return equalsIssuerCountry( Arrays.asList( k ) );
     }
 
     public CertificateValidator hasExtendedKeyUsage( String eku ) {

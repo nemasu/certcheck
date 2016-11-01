@@ -36,7 +36,7 @@ public class CertificateValidatorTest {
 
     @Test
     public void TestAlgoId() throws Exception {
-        CertificateValidator.withPem( getTestPemFile() ).isAlgorithmId( "SHA1WITHRSA" );
+        CertificateValidator.withPem( getTestPemFile() ).equalsAlgorithmId( "SHA1WITHRSA" );
     }
 
     @Test( expected = CertificateValidatorException.class )
@@ -83,7 +83,7 @@ public class CertificateValidatorTest {
 
     @Test
     public void TestPKCS7AlgoId() throws Exception {
-        CertificateValidator.withPem( getTestPKCS7File() ).isAlgorithmId( "SHA1WITHRSA" );
+        CertificateValidator.withPem( getTestPKCS7File() ).equalsAlgorithmId( "SHA1WITHRSA" );
     }
 
     @Test( expected = CertificateValidatorException.class )
@@ -119,7 +119,7 @@ public class CertificateValidatorTest {
     @Test
     public void TestPEMSubjectPrincipal() throws Exception {
         CertificateValidator.withPem( getTestPemFile() )
-                            .isAlgorithmId( "sha1withrsa" )
+                            .equalsAlgorithmId( "sha1withrsa" )
                             .equalsSubjectEmail( "admin@domain.tld" )
                             .equalsSubjectCommonName( "domain.tld" )
                             .equalsSubjectOrganizationalUnit( "DevSec" )
@@ -132,7 +132,7 @@ public class CertificateValidatorTest {
     @Test
     public void TestPEMIssuerPrincipal() throws Exception {
         CertificateValidator.withPem( getTestPemFile() )
-                            .isAlgorithmId( "sha1withrsa" )
+                            .equalsAlgorithmId( "sha1withrsa" )
                             .equalsIssuerEmail( "admin@domain.tld" )
                             .equalsIssuerCommonName( "domain.tld" )
                             .equalsIssuerOrganizationalUnit( "DevSec" )
