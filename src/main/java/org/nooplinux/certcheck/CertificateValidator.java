@@ -16,10 +16,13 @@ import org.nooplinux.certcheck.enums.CertificateType;
 import org.nooplinux.certcheck.exception.CertificateValidatorException;
 
 import javax.security.auth.x500.X500Principal;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -50,6 +53,8 @@ public class CertificateValidator {
 
     private CertificateValidator() {
     }
+
+    //TODO - need pem from string, and pkcs12 from file.
 
     private CertificateValidator( File file )
             throws CertificateValidatorException,
@@ -121,6 +126,28 @@ public class CertificateValidator {
         }
     }
 
+    private CertificateValidator( String base64PKCS12, String password ) {
+        byte[] decodedCert = java.util.Base64.getDecoder().decode( base64PKCS12 );
+        try {
+
+            KeyStore    keyStore    = KeyStore.getInstance( "PKCS12" );
+            InputStream inputStream = new ByteArrayInputStream( decodedCert );
+            keyStore.load( inputStream, password.toCharArray() );
+            //TODO We're just reading the top one, maybe add a skip number or a matcher or something?
+            java.security.cert.Certificate certificate = keyStore.getCertificate( "1" );
+            if( certificate instanceof X509Certificate ) {
+                x509Certificate = (X509Certificate) certificate;
+            } else {
+                throw new RuntimeException( "Error in create from base64 pkcs12 - Invalid cert type" );
+            }
+
+            subjectPrincipal = getPrincipal( x509Certificate.getSubjectX500Principal() );
+            issuerPrincipal = getPrincipal( x509Certificate.getIssuerX500Principal() );
+        } catch( Exception e ) {
+            throw new RuntimeException( "Error in create from base64 pkcs12 - Invalid cert", e );
+        }
+    }
+
     public static CertificateValidator withPem( File file )
             throws CertificateValidatorException,
                    CertificateException,
@@ -128,6 +155,10 @@ public class CertificateValidator {
                    CMSException,
                    NoSuchAlgorithmException {
         return new CertificateValidator( file );
+    }
+
+    public static CertificateValidator withBase64PKCS12( String base64PKCS12, String password ) {
+        return new CertificateValidator( base64PKCS12, password );
     }
 
     private Map<String, List<String>> getPrincipal( X500Principal x500Principal ) {
