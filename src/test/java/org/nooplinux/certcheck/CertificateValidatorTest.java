@@ -188,6 +188,15 @@ public class CertificateValidatorTest {
                             .equalsIssuerCountry( "JP" );
     }
 
+    @Test
+    public void TestPEMKU_EKU() throws Exception {
+        CertificateValidator.withPem( getExtTestPemFile() )
+                .hasKUDigitalSignature()
+                .hasKUKeyEncipherment()
+                .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.1")
+                .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.2");
+    }
+
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         ClassLoader classLoader  = getClass().getClassLoader();
         URL         publicKeyURL = classLoader.getResource( "test-certs/domain.tld.invalid.pub" );
@@ -227,6 +236,15 @@ public class CertificateValidatorTest {
         URL         pemFileURL  = classLoader.getResource( "test-certs/domain.tld.pem" );
         if( pemFileURL == null ) {
             throw new RuntimeException( "Cannot find test-certs/domain.tld.pem resource." );
+        }
+        return new File( pemFileURL.toURI() );
+    }
+
+    private File getExtTestPemFile() throws URISyntaxException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL         pemFileURL  = classLoader.getResource( "test-certs/ext_domain.tld.pem" );
+        if( pemFileURL == null ) {
+            throw new RuntimeException( "Cannot find test-certs/ext_domain.tld.pem resource." );
         }
         return new File( pemFileURL.toURI() );
     }

@@ -385,10 +385,85 @@ public class CertificateValidator {
         return equalsIssuerCountry( Arrays.asList( k ) );
     }
 
+    /*
+        KeyUsage ::= BIT STRING {
+               digitalSignature        (0),
+               nonRepudiation          (1),
+               keyEncipherment         (2),
+               dataEncipherment        (3),
+               keyAgreement            (4),
+               keyCertSign             (5),
+               cRLSign                 (6),
+               encipherOnly            (7),
+               decipherOnly            (8) }
+     */
+    public CertificateValidator hasKUDigitalSignature() {
+        if( !x509Certificate.getKeyUsage()[0] ) {
+            throw new CertificateValidatorException( "Key Usage: DigitalSignature does not exist.");
+        }
+        return this;
+    }
+
+    public CertificateValidator hasKUNonRepudiation() {
+        if( !x509Certificate.getKeyUsage()[1] ) {
+            throw new CertificateValidatorException( "Key Usage: NonRepudiation does not exist.");
+        }
+        return this;
+    }
+
+    public CertificateValidator hasKUKeyEncipherment() {
+        if( !x509Certificate.getKeyUsage()[2] ) {
+            throw new CertificateValidatorException( "Key Usage: KeyEncipherment does not exist.");
+        }
+        return this;
+    }
+
+    public CertificateValidator hasKUDataEncipherment() {
+        if( !x509Certificate.getKeyUsage()[3] ) {
+            throw new CertificateValidatorException( "Key Usage: DataEncipherment does not exist.");
+        }
+        return this;
+    }
+
+    public CertificateValidator hasKUKeyAgreement() {
+        if( !x509Certificate.getKeyUsage()[4] ) {
+            throw new CertificateValidatorException( "Key Usage: KeyAgreement does not exist.");
+        }
+        return this;
+    }
+
+    public CertificateValidator hasKUKeyCertSign() {
+        if( !x509Certificate.getKeyUsage()[5] ) {
+            throw new CertificateValidatorException( "Key Usage: KeyCertSign does not exist.");
+        }
+        return this;
+    }
+
+    public CertificateValidator hasKUCRLSign() {
+        if( !x509Certificate.getKeyUsage()[6] ) {
+            throw new CertificateValidatorException( "Key Usage: CRLSign does not exist.");
+        }
+        return this;
+    }
+
+    public CertificateValidator hasKUEncihperOnly() {
+        if( !x509Certificate.getKeyUsage()[7] ) {
+            throw new CertificateValidatorException( "Key Usage: EncihperOnly does not exist.");
+        }
+        return this;
+    }
+
+    public CertificateValidator hasKUDecipherOnly() {
+        if( !x509Certificate.getKeyUsage()[8] ) {
+            throw new CertificateValidatorException( "Key Usage: DecipherOnly does not exist.");
+        }
+        return this;
+    }
+
     public CertificateValidator hasExtendedKeyUsage( String eku ) {
         try {
             if( !x509Certificate.getExtendedKeyUsage().contains( eku ) ) {
-                throw new CertificateValidatorException( "Extended Key Usage not found." );
+                throw new CertificateValidatorException( "Extended Key Usage " + eku + "  not found." );
             }
         } catch( CertificateParsingException | NullPointerException e ) {
             throw new CertificateValidatorException( e );
