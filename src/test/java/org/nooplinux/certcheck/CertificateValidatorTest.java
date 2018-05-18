@@ -191,10 +191,18 @@ public class CertificateValidatorTest {
     @Test
     public void TestPEMKU_EKU() throws Exception {
         CertificateValidator.withPem( getExtTestPemFile() )
-                .hasKUDigitalSignature()
-                .hasKUKeyEncipherment()
-                .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.1")
-                .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.2");
+                            .hasKUDigitalSignature()
+                            .hasKUKeyEncipherment()
+                            .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.1")
+                            .hasExtendedKeyUsage( "1.3.6.1.5.5.7.3.2" )
+                            .noMoreKUs()
+                            .noMoreEKUs();
+    }
+
+    @Test
+    public void TestPEMUPN() throws Exception {
+        CertificateValidator.withPem( getExtTestPemFile() )
+                            .hasUPN( "admin@domain.tld" );
     }
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
