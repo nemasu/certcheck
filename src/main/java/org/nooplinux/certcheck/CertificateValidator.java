@@ -50,6 +50,8 @@ public class CertificateValidator {
     private X509Certificate           x509Certificate;
     private Map<String, List<String>> subjectPrincipal;
     private Map<String, List<String>> issuerPrincipal;
+    private List<Integer>             checkedKUs  = new ArrayList<>();
+    private List<String>              checkedEKUs = new ArrayList<>();
 
     private CertificateValidator() {
     }
@@ -401,6 +403,7 @@ public class CertificateValidator {
         if( !x509Certificate.getKeyUsage()[0] ) {
             throw new CertificateValidatorException( "Key Usage: DigitalSignature does not exist.");
         }
+        checkedKUs.add( 0 );
         return this;
     }
 
@@ -408,6 +411,7 @@ public class CertificateValidator {
         if( !x509Certificate.getKeyUsage()[1] ) {
             throw new CertificateValidatorException( "Key Usage: NonRepudiation does not exist.");
         }
+        checkedKUs.add( 1 );
         return this;
     }
 
@@ -415,6 +419,7 @@ public class CertificateValidator {
         if( !x509Certificate.getKeyUsage()[2] ) {
             throw new CertificateValidatorException( "Key Usage: KeyEncipherment does not exist.");
         }
+        checkedKUs.add( 2 );
         return this;
     }
 
@@ -422,6 +427,7 @@ public class CertificateValidator {
         if( !x509Certificate.getKeyUsage()[3] ) {
             throw new CertificateValidatorException( "Key Usage: DataEncipherment does not exist.");
         }
+        checkedKUs.add( 3 );
         return this;
     }
 
@@ -429,6 +435,7 @@ public class CertificateValidator {
         if( !x509Certificate.getKeyUsage()[4] ) {
             throw new CertificateValidatorException( "Key Usage: KeyAgreement does not exist.");
         }
+        checkedKUs.add( 4 );
         return this;
     }
 
@@ -436,6 +443,7 @@ public class CertificateValidator {
         if( !x509Certificate.getKeyUsage()[5] ) {
             throw new CertificateValidatorException( "Key Usage: KeyCertSign does not exist.");
         }
+        checkedKUs.add( 5 );
         return this;
     }
 
@@ -443,6 +451,7 @@ public class CertificateValidator {
         if( !x509Certificate.getKeyUsage()[6] ) {
             throw new CertificateValidatorException( "Key Usage: CRLSign does not exist.");
         }
+        checkedKUs.add( 6 );
         return this;
     }
 
@@ -450,12 +459,24 @@ public class CertificateValidator {
         if( !x509Certificate.getKeyUsage()[7] ) {
             throw new CertificateValidatorException( "Key Usage: EncihperOnly does not exist.");
         }
+        checkedKUs.add( 7 );
         return this;
     }
 
     public CertificateValidator hasKUDecipherOnly() {
         if( !x509Certificate.getKeyUsage()[8] ) {
             throw new CertificateValidatorException( "Key Usage: DecipherOnly does not exist.");
+        }
+        checkedKUs.add( 8 );
+        return this;
+    }
+
+    public CertificateValidator noMoreKUs() {
+        boolean[] KUs = x509Certificate.getKeyUsage();
+        for( int i = 0; i < KUs.length; i++ ) {
+            if( KUs[i] && !checkedKUs.contains( i ) ) {
+                throw new CertificateValidatorException( "KU " + i + " exists but has not been checked." );
+            }
         }
         return this;
     }
@@ -468,7 +489,46 @@ public class CertificateValidator {
         } catch( CertificateParsingException | NullPointerException e ) {
             throw new CertificateValidatorException( e );
         }
+        checkedEKUs.add( eku );
+        return this;
+    }
 
+    public CertificateValidator noMoreEKUs() {
+        try {
+            for( final String EKU : x509Certificate.getExtendedKeyUsage() ) {
+                if( !checkedEKUs.contains( EKU ) ) {
+                    throw new CertificateValidatorException( "EKU " + EKU + " exists but has not been checked." );
+                }
+            }
+        } catch( Exception e ) {
+            throw new CertificateValidatorException( e );
+        }
+        return this;
+    }
+
+    /*
+        GeneralName ::= CHOICE {
+            otherName                       [0]     OtherName,
+            rfc822Name                      [1]     IA5String,
+            dNSName                         [2]     IA5String,
+            x400Address                     [3]     ORAddress,
+            directoryName                   [4]     Name,
+            ediPartyName                    [5]     EDIPartyName,
+            uniformResourceIdentifier       [6]     IA5String,
+            iPAddress                       [7]     OCTET STRING,
+            registeredID                    [8]     OBJECT IDENTIFIER}
+     */
+    public CertificateValidator hasUPN( String upn ) {
+        try {
+            final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
+            final List<?>             sanItem         = (List<?>) subjectAltNames.toArray()[1];
+            String                    certUpn         = (String) sanItem.toArray()[1]; //[0] is ASN1Sequence
+            if( !upn.equals( certUpn ) ) {
+                throw new CertificateValidatorException( "UPN " + upn + " does not exist." );
+            }
+        } catch( Exception e ) {
+            throw new CertificateValidatorException( e );
+        }
         return this;
     }
 }
