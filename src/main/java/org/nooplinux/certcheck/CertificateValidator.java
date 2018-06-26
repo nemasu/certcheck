@@ -1,10 +1,6 @@
 package org.nooplinux.certcheck;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.DLSequence;
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -21,30 +17,10 @@ import org.nooplinux.certcheck.enums.CertificateType;
 import org.nooplinux.certcheck.exception.CertificateValidatorException;
 
 import javax.security.auth.x500.X500Principal;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.Security;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.security.*;
+import java.security.cert.*;
+import java.util.*;
 
 public class CertificateValidator {
 
@@ -545,10 +521,17 @@ public class CertificateValidator {
     public CertificateValidator hasUPN( String upn ) {
         try {
             final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
-            final List<?>             sanItem         = (List<?>) subjectAltNames.toArray()[0];
-            String                    certUPN         = getStringFromSanObject( sanItem.toArray()[1] );
 
-            if( !certUPN.equals( upn ) ) {
+            String certUPN = null;
+            for( List<?> sanItem : subjectAltNames ) {
+                Integer index = (Integer) sanItem.get( 0 );
+                if( index == 0 ) { //otherName is UPN
+                    certUPN = getStringFromSanObject( sanItem.get( 1 ) );
+                    break;
+                }
+            }
+
+            if( !upn.equals( certUPN ) ) {
                 throw new CertificateValidatorException( "UPN " + upn + " does not exist." );
             }
         } catch( Exception e ) {
@@ -560,8 +543,15 @@ public class CertificateValidator {
     public CertificateValidator hasRFC822Name( String name ) {
         try {
             final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
-            final List<?>             sanItem         = (List<?>) subjectAltNames.toArray()[1];
-            String                    certName        = getStringFromSanObject( sanItem.toArray()[1] );
+            String                    certName        = null;
+            for( List<?> sanItem : subjectAltNames ) {
+                Integer index = (Integer) sanItem.get( 0 );
+                if( index == 1 ) {
+                    certName = getStringFromSanObject( sanItem.get( 1 ) );
+                    break;
+                }
+            }
+
             if( !name.equals( certName ) ) {
                 throw new CertificateValidatorException( "RFC882Name " + name + " does not exist." );
             }
