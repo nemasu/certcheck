@@ -149,11 +149,19 @@ public class CertificateValidator {
             ASN1InputStream decoder = null;
             if( item instanceof byte[] ) {
                 decoder = new ASN1InputStream( (byte[]) item );
-                ASN1Primitive   asn1Primitive   = decoder.readObject();
-                DERTaggedObject derTaggedObject = (DERTaggedObject) asn1Primitive;
-                DLSequence      dlSequence      = (DLSequence) derTaggedObject.getObject();
+                ASN1Primitive asn1Primitive = decoder.readObject();
+
+                DERTaggedObject derTaggedObject = null;
                 //...this is ridiculous
-                return ( (DERUTF8String) ( (DERTaggedObject) ( (DLSequence) derTaggedObject.getObject() ).getObjectAt( 1 ) ).getObject() ).toString();
+                if( asn1Primitive instanceof DERTaggedObject ) {
+                    derTaggedObject = (DERTaggedObject) asn1Primitive;
+                    return ( (DERUTF8String) ( (DERTaggedObject) ( (DLSequence) derTaggedObject.getObject() ).getObjectAt( 1 ) ).getObject() )
+                            .toString();
+                } else if( asn1Primitive instanceof DLSequence ) {
+                    DLSequence dlSequence = (DLSequence) asn1Primitive;
+                    derTaggedObject = (DERTaggedObject) dlSequence.getObjectAt( 1 );
+                    return ( (DERUTF8String) ( (DERTaggedObject) derTaggedObject.getObject() ).getObject() ).toString();
+                }
             } else if( item instanceof String ) {
                 return (String) item;
             }
