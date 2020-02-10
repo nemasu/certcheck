@@ -177,25 +177,27 @@ public class CertificateValidatorTest {
                 .equalsSubjectCountry("JP");
 
         new CertificateValidator(getTestPemString())
-                .equalsAlgorithmId("sha1withrsa")
-                .equalsSubjectEmail("admin@domain.tld")
-                .equalsSubjectCommonName("domain.tld")
-                .equalsSubjectOrganizationalUnit("DevSec")
-                .equalsSubjectOrganization("TestCompany1")
-                .equalsSubjectLocality("Shibuya")
-                .equalsSubjectState("Tokyo")
-                .equalsSubjectCountry("JP");
+                .equalsAlgorithmId( "sha1withrsa" )
+                .equalsSubjectEmail( "admin@domain.tld" )
+                .equalsSubjectCommonName( "domain.tld" )
+                .equalsSubjectOrganizationalUnit( "DevSec" )
+                .equalsSubjectOrganization( "TestCompany1" )
+                .equalsSubjectLocality( "Shibuya" )
+                .equalsSubjectState( "Tokyo" )
+                .equalsSubjectCountry( "JP" );
     }
+
+    //TODO Add tests for Surname, Given Name
 
     @Test
     public void TestPEMIssuerPrincipal() throws Exception {
-        new CertificateValidator(getTestPemFile())
-                .equalsAlgorithmId("sha1withrsa")
-                .equalsIssuerEmail("admin@domain.tld")
-                .equalsIssuerCommonName("domain.tld")
-                .equalsIssuerOrganizationalUnit("DevSec")
-                .equalsIssuerOrganization("TestCompany1")
-                .equalsIssuerLocality("Shibuya")
+        new CertificateValidator( getTestPemFile() )
+                .equalsAlgorithmId( "sha1withrsa" )
+                .equalsIssuerEmail( "admin@domain.tld" )
+                .equalsIssuerCommonName( "domain.tld" )
+                .equalsIssuerOrganizationalUnit( "DevSec" )
+                .equalsIssuerOrganization( "TestCompany1" )
+                .equalsIssuerLocality( "Shibuya" )
                 .equalsIssuerState("Tokyo")
                 .equalsIssuerCountry("JP");
         new CertificateValidator(getTestPemString())
