@@ -330,23 +330,40 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator equalsSubjectCountry(List<String> k) {
-        if (!subjectPrincipal.get("C").equals(k)) {
-            throw new CertificateValidatorException("Subject Country " + subjectPrincipal.get("C") + " does not equal " + k);
+    public CertificateValidator equalsSubjectCountry( List<String> k ) {
+        if( !subjectPrincipal.get( "C" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject Country " + subjectPrincipal.get( "C" ) + " does not equal " + k );
 
         }
         return this;
     }
 
-    public CertificateValidator equalsIssuerEmail(List<String> k) {
-        if (!issuerPrincipal.get("E").equals(k)) {
-            throw new CertificateValidatorException("Issuer Email " + issuerPrincipal.get("E") + " does not equal " + k);
+    //Surname, Given Name
+    public CertificateValidator equalsSubjectSurname( String k ) {
+        if( !subjectPrincipal.get( "SN" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject Surname " + subjectPrincipal.get( "SN" ) + " does not equal " + k );
 
         }
         return this;
     }
 
-    public CertificateValidator equalsIssuerCommonName(List<String> k) {
+    public CertificateValidator equalsSubjectGivenName( String k ) {
+        if( !subjectPrincipal.get( "G" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject Given Name " + subjectPrincipal.get( "G" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsIssuerEmail( List<String> k ) {
+        if( !issuerPrincipal.get( "E" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Issuer Email " + issuerPrincipal.get( "E" ) + " does not equal " + k );
+
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsIssuerCommonName( List<String> k ) {
         if (!issuerPrincipal.get("CN").equals(k)) {
             throw new CertificateValidatorException("Issuer CommonName " + issuerPrincipal.get("CN") + " does not equal " + k);
 
