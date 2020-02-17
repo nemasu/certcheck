@@ -283,7 +283,6 @@ public class CertificateValidator {
     public CertificateValidator equalsSubjectEmail(List<String> k) {
         if (!subjectPrincipal.get("E").equals(k)) {
             throw new CertificateValidatorException("Subject Email " + subjectPrincipal.get("E") + " does not equal " + k);
-
         }
         return this;
     }
@@ -291,7 +290,6 @@ public class CertificateValidator {
     public CertificateValidator equalsSubjectCommonName(List<String> k) {
         if (!subjectPrincipal.get("CN").equals(k)) {
             throw new CertificateValidatorException("Subject CommonName " + subjectPrincipal.get("CN") + " does not equal " + k);
-
         }
         return this;
     }
@@ -299,7 +297,6 @@ public class CertificateValidator {
     public CertificateValidator equalsSubjectOrganizationalUnit(List<String> k) {
         if (!subjectPrincipal.get("OU").equals(k)) {
             throw new CertificateValidatorException("Subject OrganizationalUnit " + subjectPrincipal.get("OU") + " does not equal " + k);
-
         }
         return this;
     }
@@ -307,7 +304,6 @@ public class CertificateValidator {
     public CertificateValidator equalsSubjectOrganization(List<String> k) {
         if (!subjectPrincipal.get("O").equals(k)) {
             throw new CertificateValidatorException("Subject Organization " + subjectPrincipal.get("E") + " does not equal " + k);
-
         }
         return this;
     }
@@ -316,7 +312,6 @@ public class CertificateValidator {
     public CertificateValidator equalsSubjectLocality(List<String> k) {
         if (!subjectPrincipal.get("L").equals(k)) {
             throw new CertificateValidatorException("Subject Locality " + subjectPrincipal.get("L") + " does not equal " + k);
-
         }
         return this;
     }
@@ -325,7 +320,6 @@ public class CertificateValidator {
     public CertificateValidator equalsSubjectState(List<String> k) {
         if (!subjectPrincipal.get("ST").equals(k)) {
             throw new CertificateValidatorException("Subject State " + subjectPrincipal.get("ST") + " does not equal " + k);
-
         }
         return this;
     }
@@ -333,7 +327,6 @@ public class CertificateValidator {
     public CertificateValidator equalsSubjectCountry( List<String> k ) {
         if( !subjectPrincipal.get( "C" ).equals( k ) ) {
             throw new CertificateValidatorException( "Subject Country " + subjectPrincipal.get( "C" ) + " does not equal " + k );
-
         }
         return this;
     }
@@ -342,15 +335,13 @@ public class CertificateValidator {
     public CertificateValidator equalsSubjectSurname( String k ) {
         if( !subjectPrincipal.get( "SN" ).equals( k ) ) {
             throw new CertificateValidatorException( "Subject Surname " + subjectPrincipal.get( "SN" ) + " does not equal " + k );
-
         }
         return this;
     }
 
     public CertificateValidator equalsSubjectGivenName( String k ) {
-        if( !subjectPrincipal.get( "G" ).equals( k ) ) {
-            throw new CertificateValidatorException( "Subject Given Name " + subjectPrincipal.get( "G" ) + " does not equal " + k );
-
+        if( !subjectPrincipal.get( "GIVENNAME" ).equals( k ) ) {
+            throw new CertificateValidatorException( "Subject Given Name " + subjectPrincipal.get( "GIVENNAME" ) + " does not equal " + k );
         }
         return this;
     }
@@ -358,7 +349,6 @@ public class CertificateValidator {
     public CertificateValidator equalsIssuerEmail( List<String> k ) {
         if( !issuerPrincipal.get( "E" ).equals( k ) ) {
             throw new CertificateValidatorException( "Issuer Email " + issuerPrincipal.get( "E" ) + " does not equal " + k );
-
         }
         return this;
     }
@@ -366,7 +356,6 @@ public class CertificateValidator {
     public CertificateValidator equalsIssuerCommonName( List<String> k ) {
         if (!issuerPrincipal.get("CN").equals(k)) {
             throw new CertificateValidatorException("Issuer CommonName " + issuerPrincipal.get("CN") + " does not equal " + k);
-
         }
         return this;
     }
@@ -374,7 +363,6 @@ public class CertificateValidator {
     public CertificateValidator equalsIssuerOrganizationalUnit(List<String> k) {
         if (!issuerPrincipal.get("OU").equals(k)) {
             throw new CertificateValidatorException("Issuer OrganizationalUnit " + issuerPrincipal.get("OU") + " does not equal " + k);
-
         }
         return this;
     }
@@ -382,7 +370,6 @@ public class CertificateValidator {
     public CertificateValidator equalsIssuerOrganization(List<String> k) {
         if (!issuerPrincipal.get("O").equals(k)) {
             throw new CertificateValidatorException("Issuer Organization " + issuerPrincipal.get("E") + " does not equal " + k);
-
         }
         return this;
     }
@@ -391,7 +378,6 @@ public class CertificateValidator {
     public CertificateValidator equalsIssuerLocality(List<String> k) {
         if (!issuerPrincipal.get("L").equals(k)) {
             throw new CertificateValidatorException("Issuer Locality " + issuerPrincipal.get("L") + " does not equal " + k);
-
         }
         return this;
     }
@@ -400,7 +386,6 @@ public class CertificateValidator {
     public CertificateValidator equalsIssuerState(List<String> k) {
         if (!issuerPrincipal.get("ST").equals(k)) {
             throw new CertificateValidatorException("Issuer State " + issuerPrincipal.get("ST") + " does not equal " + k);
-
         }
         return this;
     }
@@ -408,7 +393,6 @@ public class CertificateValidator {
     public CertificateValidator equalsIssuerCountry(List<String> k) {
         if (!issuerPrincipal.get("C").equals(k)) {
             throw new CertificateValidatorException("Issuer Country " + issuerPrincipal.get("C") + " does not equal " + k);
-
         }
         return this;
     }
