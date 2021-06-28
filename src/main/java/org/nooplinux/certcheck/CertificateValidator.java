@@ -333,14 +333,16 @@ public class CertificateValidator {
 
     //Surname, Given Name
     public CertificateValidator equalsSubjectSurname( String k ) {
-        if( !subjectPrincipal.get( "SN" ).equals( k ) ) {
-            throw new CertificateValidatorException( "Subject Surname " + subjectPrincipal.get( "SN" ) + " does not equal " + k );
+        List<String> sn = subjectPrincipal.get( "SURNAME" );
+        if( !( sn.size() == 1 && sn.contains( k ) ) ) {
+            throw new CertificateValidatorException( "Subject Surname " + subjectPrincipal.get( "SURNAME" ) + " does not equal " + k );
         }
         return this;
     }
 
     public CertificateValidator equalsSubjectGivenName( String k ) {
-        if( !subjectPrincipal.get( "GIVENNAME" ).equals( k ) ) {
+        List<String> g = subjectPrincipal.get( "GIVENNAME" );
+        if( !( g.size() == 1 && g.contains( k ) ) ) {
             throw new CertificateValidatorException( "Subject Given Name " + subjectPrincipal.get( "GIVENNAME" ) + " does not equal " + k );
         }
         return this;

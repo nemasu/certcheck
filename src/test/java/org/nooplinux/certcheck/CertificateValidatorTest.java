@@ -239,6 +239,22 @@ public class CertificateValidatorTest {
                 .hasRFC822Name("admin@domain.tld");
     }
 
+    @Test
+    public void TestGivenName() throws Exception {
+        new CertificateValidator(getExtTestPemFile())
+                .equalsSubjectGivenName("Firstnamebert");
+        new CertificateValidator((getTestExtPemString()))
+                .equalsSubjectGivenName("Firstnamebert");
+    }
+
+    @Test
+    public void TestSurName() throws Exception {
+        new CertificateValidator(getExtTestPemFile())
+                .equalsSubjectSurname("Lastnameson");
+        new CertificateValidator((getTestExtPemString()))
+                .equalsSubjectSurname("Lastnameson");
+    }
+
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         ClassLoader classLoader = getClass().getClassLoader();
         URL publicKeyURL = classLoader.getResource("test-certs/domain.tld.invalid.pub");
