@@ -1,9 +1,9 @@
-package org.nooplinux.certcheck;
+package farm.puddle.certcheck;
 
+import farm.puddle.certcheck.exception.CertificateValidatorException;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.junit.Test;
-import org.nooplinux.certcheck.exception.CertificateValidatorException;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -235,7 +235,7 @@ public class CertificateValidatorTest {
                 .hasUPN("admin@domain.tld")
                 .hasRFC822Name("admin@domain.tld");
         new CertificateValidator(getTestExtPemString())
-                .hasUPN("admin@domain.tld")
+                .hasUPN("admin@domain.tld") 
                 .hasRFC822Name("admin@domain.tld");
     }
 
@@ -253,6 +253,14 @@ public class CertificateValidatorTest {
                 .equalsSubjectSurname("Lastnameson");
         new CertificateValidator((getTestExtPemString()))
                 .equalsSubjectSurname("Lastnameson");
+    }
+
+    @Test
+    public void TestSKID() throws Exception {
+        new CertificateValidator(getExtTestPemFile())
+                .hasSubjectKeyIdentifier("E32745311350723C82A03E6B8767B41A07B81077");
+        new CertificateValidator((getTestExtPemString()))
+                .hasSubjectKeyIdentifier("E32745311350723C82A03E6B8767B41A07B81077");
     }
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {

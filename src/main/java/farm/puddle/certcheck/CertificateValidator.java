@@ -1,12 +1,12 @@
-package org.nooplinux.certcheck;
+package farm.puddle.certcheck;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DLSequence;
+import farm.puddle.certcheck.enums.CertificateType;
+import farm.puddle.certcheck.exception.CertificateValidatorException;
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSException;
@@ -14,10 +14,9 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.util.Store;
+import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
-import org.nooplinux.certcheck.enums.CertificateType;
-import org.nooplinux.certcheck.exception.CertificateValidatorException;
 
 import javax.security.auth.x500.X500Principal;
 import java.io.*;
@@ -222,6 +221,8 @@ public class CertificateValidator {
                     DLSequence dlSequence = (DLSequence) asn1Primitive;
                     derTaggedObject = (DERTaggedObject) dlSequence.getObjectAt(1);
                     return ((DERTaggedObject) derTaggedObject.getObject()).getObject().toString();
+                } else if (asn1Primitive instanceof DLTaggedObject) {
+                    return ((DLTaggedObject)((DLSequence)((DLTaggedObject) asn1Primitive).getObject()).getObjectAt(1)).getObject().toString();
                 }
             } else if (item instanceof String) {
                 return (String) item;
@@ -630,6 +631,21 @@ public class CertificateValidator {
         } catch (Exception e) {
             throw new CertificateValidatorException(e);
         }
+        return this;
+    }
+
+    public CertificateValidator hasSubjectKeyIdentifier(String s) {
+
+        byte[] extensionValue = x509Certificate.getExtensionValue("2.5.29.14");
+        byte[] subjectOctets = DEROctetString.getInstance(extensionValue).getOctets();
+        SubjectKeyIdentifier.getInstance(subjectOctets);
+        byte[] keyIdentifierBytes = SubjectKeyIdentifier.getInstance(subjectOctets).getKeyIdentifier();
+        String keyIdentifierString = Hex.toHexString(keyIdentifierBytes).toLowerCase();
+
+        if( !s.toLowerCase().equals(keyIdentifierString)) {
+            throw new CertificateValidatorException("Subject Key Identifier " + s + " does not exist. It is " + keyIdentifierString);
+        }
+
         return this;
     }
 }

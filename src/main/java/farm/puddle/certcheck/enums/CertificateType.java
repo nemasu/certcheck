@@ -1,4 +1,4 @@
-package org.nooplinux.certcheck.enums;
+package farm.puddle.certcheck.enums;
 
 public enum CertificateType {
     PEM,

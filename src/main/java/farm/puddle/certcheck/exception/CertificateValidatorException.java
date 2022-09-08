@@ -1,4 +1,4 @@
-package org.nooplinux.certcheck.exception;
+package farm.puddle.certcheck.exception;
 
 public class CertificateValidatorException extends RuntimeException {
 
