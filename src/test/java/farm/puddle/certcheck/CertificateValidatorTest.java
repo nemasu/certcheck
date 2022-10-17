@@ -6,6 +6,7 @@ import org.bouncycastle.util.io.pem.PemReader;
 import org.junit.Test;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyFactory;
@@ -258,9 +259,28 @@ public class CertificateValidatorTest {
     @Test
     public void TestSKID() throws Exception {
         new CertificateValidator(getExtTestPemFile())
-                .hasSubjectKeyIdentifier("E32745311350723C82A03E6B8767B41A07B81077");
+                .hasSubjectKeyIdentifier("3de4ec44bb5618f7f98532ef61fb3d5f21775b75");
         new CertificateValidator((getTestExtPemString()))
-                .hasSubjectKeyIdentifier("E32745311350723C82A03E6B8767B41A07B81077");
+                .hasSubjectKeyIdentifier("3de4ec44bb5618f7f98532ef61fb3d5f21775b75");
+    }
+
+    @Test
+    public void TestSerialNumber() throws Exception {
+        new CertificateValidator( getExtTestPemFile() )
+                .equalsSerialNumber( new BigInteger( "6d4377de4cd39dd0b5ca50781d912bc1bc06f67f", 16) );
+        new CertificateValidator( getTestExtPemString() )
+                .equalsSerialNumber( new BigInteger( "6d4377de4cd39dd0b5ca50781d912bc1bc06f67f", 16) );
+
+        new CertificateValidator( getTestPemFile() )
+                .equalsSerialNumber( new BigInteger( "00aeb76a4c3d4631a0", 16) );
+    }
+
+    @Test
+    public void TestOrgID() throws Exception {
+        new CertificateValidator( getExtTestPemFile() )
+                .equalsOrganizationIdentifier( "My Organization ID" );
+        new CertificateValidator( getTestExtPemString() )
+                .equalsOrganizationIdentifier( "My Organization ID" );
     }
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {

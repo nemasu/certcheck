@@ -20,6 +20,7 @@ import org.bouncycastle.util.io.pem.PemReader;
 
 import javax.security.auth.x500.X500Principal;
 import java.io.*;
+import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.*;
 import java.util.*;
@@ -266,6 +267,21 @@ public class CertificateValidator {
 
         if (!algorithmId.equalsIgnoreCase(x509Certificate.getSigAlgName())) {
             throw new CertificateValidatorException(x509Certificate.getSigAlgName() + " does not match " + algorithmId);
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsSerialNumber( BigInteger serialNumber ) {
+        if (!x509Certificate.getSerialNumber().equals( serialNumber )) {
+            throw new CertificateValidatorException(x509Certificate.getSerialNumber() + " does not match " + serialNumber);
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsOrganizationIdentifier( String k ) {
+        List<String> sn = subjectPrincipal.get( "organizationIdentifier" );
+        if( !( sn.size() == 1 && sn.contains( k ) ) ) {
+            throw new CertificateValidatorException( "Organization Identifier " + subjectPrincipal.get( "organizationIdentifier" ) + " does not equal " + k );
         }
         return this;
     }
@@ -528,9 +544,9 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator hasKUEncihperOnly() {
+    public CertificateValidator hasKUEncipherOnly() {
         if (!x509Certificate.getKeyUsage()[7]) {
-            throw new CertificateValidatorException("Key Usage: EncihperOnly does not exist.");
+            throw new CertificateValidatorException("Key Usage: EncipherOnly does not exist.");
         }
         checkedKUs.add(7);
         return this;
