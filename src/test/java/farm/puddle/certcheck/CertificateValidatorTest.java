@@ -58,13 +58,13 @@ public class CertificateValidatorTest {
                 + "ieYWtNzmWvUUMAQIt/zcSl1UVckCAggA";
         new CertificateValidator(base64, "1234aoeu1234aoeu") //This was provided during openssl command above.
                 .equalsAlgorithmId("sha1withrsa")
-                .equalsSubjectEmail("admin@domain.tld")
-                .equalsSubjectCommonName("domain.tld")
-                .equalsSubjectOrganizationalUnit("DevSec")
-                .equalsSubjectOrganization("TestCompany1")
-                .equalsSubjectLocality("Shibuya")
-                .equalsSubjectState("Tokyo")
-                .equalsSubjectCountry("JP");
+                .equalsSubjectDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.CommonName, "domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
+                .equalsSubjectDNField(CertificateValidator.DNField.Organization, "TestCompany1")
+                .equalsSubjectDNField(CertificateValidator.DNField.Locality, "Shibuya")
+                .equalsSubjectDNField(CertificateValidator.DNField.State, "Tokyo")
+                .equalsSubjectDNField(CertificateValidator.DNField.Country, "JP");
     }
 
     //PEM
@@ -169,23 +169,26 @@ public class CertificateValidatorTest {
     public void TestPEMSubjectPrincipal() throws Exception {
         new CertificateValidator(getTestPemFile())
                 .equalsAlgorithmId("sha1withrsa")
-                .equalsSubjectEmail("admin@domain.tld")
-                .equalsSubjectCommonName("domain.tld")
-                .equalsSubjectOrganizationalUnit("DevSec")
-                .equalsSubjectOrganization("TestCompany1")
-                .equalsSubjectLocality("Shibuya")
-                .equalsSubjectState("Tokyo")
-                .equalsSubjectCountry("JP");
+                .hasSubjectDNField(CertificateValidator.DNField.Email, true)
+                .equalsSubjectDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.CommonName, "domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
+                .equalsSubjectDNField(CertificateValidator.DNField.Organization, "TestCompany1")
+                .equalsSubjectDNField(CertificateValidator.DNField.Locality, "Shibuya")
+                .equalsSubjectDNField(CertificateValidator.DNField.State, "Tokyo")
+                .equalsSubjectDNField(CertificateValidator.DNField.Country, "JP")
+                .hasSubjectDNField(CertificateValidator.DNField.Surname, false)
+                .hasIssuerDNField(CertificateValidator.DNField.OrganizationIdentifier, false);
 
         new CertificateValidator(getTestPemString())
                 .equalsAlgorithmId( "sha1withrsa" )
-                .equalsSubjectEmail( "admin@domain.tld" )
-                .equalsSubjectCommonName( "domain.tld" )
-                .equalsSubjectOrganizationalUnit( "DevSec" )
-                .equalsSubjectOrganization( "TestCompany1" )
-                .equalsSubjectLocality( "Shibuya" )
-                .equalsSubjectState( "Tokyo" )
-                .equalsSubjectCountry( "JP" );
+                .equalsSubjectDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.CommonName, "domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
+                .equalsSubjectDNField(CertificateValidator.DNField.Organization, "TestCompany1")
+                .equalsSubjectDNField(CertificateValidator.DNField.Locality, "Shibuya")
+                .equalsSubjectDNField(CertificateValidator.DNField.State, "Tokyo")
+                .equalsSubjectDNField(CertificateValidator.DNField.Country, "JP");
     }
 
     //TODO Add tests for Surname, Given Name
@@ -194,36 +197,36 @@ public class CertificateValidatorTest {
     public void TestPEMIssuerPrincipal() throws Exception {
         new CertificateValidator( getTestPemFile() )
                 .equalsAlgorithmId( "sha1withrsa" )
-                .equalsIssuerEmail( "admin@domain.tld" )
-                .equalsIssuerCommonName( "domain.tld" )
-                .equalsIssuerOrganizationalUnit( "DevSec" )
-                .equalsIssuerOrganization( "TestCompany1" )
-                .equalsIssuerLocality( "Shibuya" )
-                .equalsIssuerState("Tokyo")
-                .equalsIssuerCountry("JP");
+                .equalsIssuerDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
+                .equalsIssuerDNField(CertificateValidator.DNField.CommonName, "domain.tld")
+                .equalsIssuerDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
+                .equalsIssuerDNField(CertificateValidator.DNField.Organization, "TestCompany1")
+                .equalsIssuerDNField(CertificateValidator.DNField.Locality, "Shibuya")
+                .equalsIssuerDNField(CertificateValidator.DNField.State, "Tokyo")
+                .equalsIssuerDNField(CertificateValidator.DNField.Country, "JP");
         new CertificateValidator(getTestPemString())
                 .equalsAlgorithmId("sha1withrsa")
-                .equalsIssuerEmail("admin@domain.tld")
-                .equalsIssuerCommonName("domain.tld")
-                .equalsIssuerOrganizationalUnit("DevSec")
-                .equalsIssuerOrganization("TestCompany1")
-                .equalsIssuerLocality("Shibuya")
-                .equalsIssuerState("Tokyo")
-                .equalsIssuerCountry("JP");
+                .equalsIssuerDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
+                .equalsIssuerDNField(CertificateValidator.DNField.CommonName, "domain.tld")
+                .equalsIssuerDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
+                .equalsIssuerDNField(CertificateValidator.DNField.Organization, "TestCompany1")
+                .equalsIssuerDNField(CertificateValidator.DNField.Locality, "Shibuya")
+                .equalsIssuerDNField(CertificateValidator.DNField.State, "Tokyo")
+                .equalsIssuerDNField(CertificateValidator.DNField.Country, "JP");
     }
 
     @Test
     public void TestPEMKU_EKU() throws Exception {
         new CertificateValidator(getExtTestPemFile())
-                .hasKUDigitalSignature()
-                .hasKUKeyEncipherment()
+                .hasKU(CertificateValidator.KUField.digitalSignature)
+                .hasKU(CertificateValidator.KUField.keyEncipherment)
                 .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.1")
                 .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.2")
                 .noMoreKUs()
                 .noMoreEKUs();
         new CertificateValidator(getTestExtPemString())
-                .hasKUDigitalSignature()
-                .hasKUKeyEncipherment()
+                .hasKU(CertificateValidator.KUField.digitalSignature)
+                .hasKU(CertificateValidator.KUField.keyEncipherment)
                 .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.1")
                 .hasExtendedKeyUsage("1.3.6.1.5.5.7.3.2")
                 .noMoreKUs()
@@ -243,17 +246,18 @@ public class CertificateValidatorTest {
     @Test
     public void TestGivenName() throws Exception {
         new CertificateValidator(getExtTestPemFile())
-                .equalsSubjectGivenName("Firstnamebert");
+                .equalsSubjectDNField(CertificateValidator.DNField.GivenName, "Firstnamebert");
+
         new CertificateValidator((getTestExtPemString()))
-                .equalsSubjectGivenName("Firstnamebert");
+                .equalsSubjectDNField(CertificateValidator.DNField.GivenName, "Firstnamebert");
     }
 
     @Test
     public void TestSurName() throws Exception {
         new CertificateValidator(getExtTestPemFile())
-                .equalsSubjectSurname("Lastnameson");
+                .equalsSubjectDNField(CertificateValidator.DNField.Surname, "Lastnameson");
         new CertificateValidator((getTestExtPemString()))
-                .equalsSubjectSurname("Lastnameson");
+                .equalsSubjectDNField(CertificateValidator.DNField.Surname, "Lastnameson");
     }
 
     @Test
@@ -278,9 +282,9 @@ public class CertificateValidatorTest {
     @Test
     public void TestOrgID() throws Exception {
         new CertificateValidator( getExtTestPemFile() )
-                .equalsSubjectOrganizationIdentifier( "My Organization ID" );
+                .equalsSubjectDNField( CertificateValidator.DNField.OrganizationIdentifier, "My Organization ID" );
         new CertificateValidator( getTestExtPemString() )
-                .equalsSubjectOrganizationIdentifier( "My Organization ID" );
+                .equalsSubjectDNField( CertificateValidator.DNField.OrganizationIdentifier, "My Organization ID" );
     }
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {

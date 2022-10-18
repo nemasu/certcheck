@@ -27,6 +27,70 @@ import java.util.*;
 
 public class CertificateValidator {
 
+    public enum DNField {
+        Email,
+        CommonName,
+        OrganizationalUnit,
+        Organization,
+        Locality,
+        State,
+        Country,
+        Surname,
+        GivenName,
+        OrganizationIdentifier,
+    }
+
+
+    public enum KUField {
+        digitalSignature,
+        nonRepudiation,
+        keyEncipherment,
+        dataEncipherment,
+        keyAgreement,
+        keyCertSign,
+        cRLSign,
+        encipherOnly,
+        decipherOnly
+    }
+
+    private static final Map<DNField,String> DNFieldToKey = new HashMap<DNField, String>(){{
+        put(DNField.Email, "E");
+        put(DNField.CommonName, "CN");
+        put(DNField.OrganizationalUnit, "OU");
+        put(DNField.Organization, "O");
+        put(DNField.Locality, "L");
+        put(DNField.State, "ST");
+        put(DNField.Country, "C");
+        put(DNField.Surname, "SURNAME");
+        put(DNField.GivenName, "GIVENNAME");
+        put(DNField.OrganizationIdentifier, "organizationIdentifier");
+    }};
+
+    /*
+        KeyUsage ::= BIT STRING {
+               digitalSignature        (0),
+               nonRepudiation          (1),
+               keyEncipherment         (2),
+               dataEncipherment        (3),
+               keyAgreement            (4),
+               keyCertSign             (5),
+               cRLSign                 (6),
+               encipherOnly            (7),
+               decipherOnly            (8) }
+     */
+    private static final Map<KUField,Integer> KUFieldToKey = new HashMap<KUField, Integer>(){{
+        put(KUField.digitalSignature, 0);
+        put(KUField.nonRepudiation, 1);
+        put(KUField.keyEncipherment, 2);
+        put(KUField.dataEncipherment, 3);
+        put(KUField.keyAgreement, 4);
+        put(KUField.keyCertSign, 5);
+        put(KUField.cRLSign, 6);
+        put(KUField.encipherOnly, 7);
+        put(KUField.decipherOnly, 8);
+
+    }};
+
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
@@ -289,275 +353,80 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator equalsSubjectEmail(List<String> k) {
-        if (!subjectPrincipal.get("E").equals(k)) {
-            throw new CertificateValidatorException("Subject Email " + subjectPrincipal.get("E") + " does not equal " + k);
+    public CertificateValidator equalsSubjectDNField(DNField dnField, List<String> k) {
+        String key = DNFieldToKey.get( dnField );
+
+        if (!subjectPrincipal.get(key).equals(k)) {
+            throw new CertificateValidatorException(dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
 
-    public CertificateValidator equalsSubjectCommonName(List<String> k) {
-        if (!subjectPrincipal.get("CN").equals(k)) {
-            throw new CertificateValidatorException("Subject CommonName " + subjectPrincipal.get("CN") + " does not equal " + k);
-        }
-        return this;
-    }
+    public CertificateValidator equalsSubjectDNField(DNField dnField, String k) {
+        String key = DNFieldToKey.get( dnField );
 
-    public CertificateValidator equalsSubjectOrganizationalUnit(List<String> k) {
-        if (!subjectPrincipal.get("OU").equals(k)) {
-            throw new CertificateValidatorException("Subject OrganizationalUnit " + subjectPrincipal.get("OU") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    public CertificateValidator equalsSubjectOrganization(List<String> k) {
-        if (!subjectPrincipal.get("O").equals(k)) {
-            throw new CertificateValidatorException("Subject Organization " + subjectPrincipal.get("E") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    //Locality, City
-    public CertificateValidator equalsSubjectLocality(List<String> k) {
-        if (!subjectPrincipal.get("L").equals(k)) {
-            throw new CertificateValidatorException("Subject Locality " + subjectPrincipal.get("L") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    //State, County, Region
-    public CertificateValidator equalsSubjectState(List<String> k) {
-        if (!subjectPrincipal.get("ST").equals(k)) {
-            throw new CertificateValidatorException("Subject State " + subjectPrincipal.get("ST") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    public CertificateValidator equalsSubjectCountry( List<String> k ) {
-        if( !subjectPrincipal.get( "C" ).equals( k ) ) {
-            throw new CertificateValidatorException( "Subject Country " + subjectPrincipal.get( "C" ) + " does not equal " + k );
-        }
-        return this;
-    }
-
-    //Surname, Given Name
-    public CertificateValidator equalsSubjectSurname( String k ) {
-        List<String> sn = subjectPrincipal.get( "SURNAME" );
+        List<String> sn = subjectPrincipal.get( key );
         if( !( sn.size() == 1 && sn.contains( k ) ) ) {
-            throw new CertificateValidatorException( "Subject Surname " + subjectPrincipal.get( "SURNAME" ) + " does not equal " + k );
+            throw new CertificateValidatorException(dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
 
-    public CertificateValidator equalsSubjectGivenName( String k ) {
-        List<String> g = subjectPrincipal.get( "GIVENNAME" );
-        if( !( g.size() == 1 && g.contains( k ) ) ) {
-            throw new CertificateValidatorException( "Subject Given Name " + subjectPrincipal.get( "GIVENNAME" ) + " does not equal " + k );
+    public CertificateValidator hasSubjectDNField(DNField dnField, boolean wantExists) {
+        String key = DNFieldToKey.get( dnField );
+
+        List<String> sn = subjectPrincipal.get(key );
+
+        if ( sn == null && wantExists) {
+            throw new CertificateValidatorException(dnField.name() + " does not exist.");
+        } else if ( sn != null && !wantExists ) {
+            throw new CertificateValidatorException(dnField.name() + " does exist: " + sn.toString());
+        }
+
+        return this;
+    }
+
+    public CertificateValidator equalsIssuerDNField(DNField dnField, List<String> k) {
+        String key = DNFieldToKey.get( dnField );
+
+        if (!issuerPrincipal.get(key).equals(k)) {
+            throw new CertificateValidatorException(dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
 
-    public CertificateValidator equalsSubjectOrganizationIdentifier( String k ) {
-        List<String> sn = subjectPrincipal.get( "organizationIdentifier" );
+    public CertificateValidator equalsIssuerDNField(DNField dnField, String k) {
+        String key = DNFieldToKey.get( dnField );
+
+        List<String> sn = issuerPrincipal.get( key );
         if( !( sn.size() == 1 && sn.contains( k ) ) ) {
-            throw new CertificateValidatorException( "Organization Identifier " + subjectPrincipal.get( "organizationIdentifier" ) + " does not equal " + k );
+            throw new CertificateValidatorException(dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
 
-    public CertificateValidator equalsIssuerEmail( List<String> k ) {
-        if( !issuerPrincipal.get( "E" ).equals( k ) ) {
-            throw new CertificateValidatorException( "Issuer Email " + issuerPrincipal.get( "E" ) + " does not equal " + k );
+    public CertificateValidator hasIssuerDNField(DNField dnField, boolean wantExists) {
+        String key = DNFieldToKey.get(dnField);
+
+        List<String> sn = issuerPrincipal.get(key);
+
+        if ( sn == null && wantExists) {
+            throw new CertificateValidatorException(dnField.name() + " does not exist.");
+        } else if ( sn != null && !wantExists ) {
+            throw new CertificateValidatorException(dnField.name() + " does exist: " + sn.toString());
         }
+
         return this;
     }
 
-    public CertificateValidator equalsIssuerCommonName( List<String> k ) {
-        if (!issuerPrincipal.get("CN").equals(k)) {
-            throw new CertificateValidatorException("Issuer CommonName " + issuerPrincipal.get("CN") + " does not equal " + k);
+    public CertificateValidator hasKU(KUField kuField) {
+        Integer key = KUFieldToKey.get( kuField );
+        if (!x509Certificate.getKeyUsage()[key]) {
+            throw new CertificateValidatorException("Key Usage: " + kuField.name() + " does not exist.");
         }
+        checkedKUs.add(key);
         return this;
-    }
 
-    public CertificateValidator equalsIssuerOrganizationalUnit(List<String> k) {
-        if (!issuerPrincipal.get("OU").equals(k)) {
-            throw new CertificateValidatorException("Issuer OrganizationalUnit " + issuerPrincipal.get("OU") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    public CertificateValidator equalsIssuerOrganization(List<String> k) {
-        if (!issuerPrincipal.get("O").equals(k)) {
-            throw new CertificateValidatorException("Issuer Organization " + issuerPrincipal.get("E") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    //Locality, City
-    public CertificateValidator equalsIssuerLocality(List<String> k) {
-        if (!issuerPrincipal.get("L").equals(k)) {
-            throw new CertificateValidatorException("Issuer Locality " + issuerPrincipal.get("L") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    //State, County, Region
-    public CertificateValidator equalsIssuerState(List<String> k) {
-        if (!issuerPrincipal.get("ST").equals(k)) {
-            throw new CertificateValidatorException("Issuer State " + issuerPrincipal.get("ST") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    public CertificateValidator equalsIssuerCountry(List<String> k) {
-        if (!issuerPrincipal.get("C").equals(k)) {
-            throw new CertificateValidatorException("Issuer Country " + issuerPrincipal.get("C") + " does not equal " + k);
-        }
-        return this;
-    }
-
-    public CertificateValidator equalsSubjectEmail(String k) {
-        return equalsSubjectEmail(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsSubjectCommonName(String k) {
-        return equalsSubjectCommonName(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsSubjectOrganizationalUnit(String k) {
-        return equalsSubjectOrganizationalUnit(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsSubjectOrganization(String k) {
-        return equalsSubjectOrganization(Arrays.asList(k));
-    }
-
-    //Locality, City
-    public CertificateValidator equalsSubjectLocality(String k) {
-        return equalsSubjectLocality(Arrays.asList(k));
-    }
-
-    //State, County, Region
-    public CertificateValidator equalsSubjectState(String k) {
-        return equalsSubjectState(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsSubjectCountry(String k) {
-        return equalsSubjectCountry(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsIssuerEmail(String k) {
-        return equalsIssuerEmail(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsIssuerCommonName(String k) {
-        return equalsIssuerCommonName(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsIssuerOrganizationalUnit(String k) {
-        return equalsIssuerOrganizationalUnit(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsIssuerOrganization(String k) {
-        return equalsIssuerOrganization(Arrays.asList(k));
-    }
-
-    //Locality, City
-    public CertificateValidator equalsIssuerLocality(String k) {
-        return equalsIssuerLocality(Arrays.asList(k));
-    }
-
-    //State, County, Region
-    public CertificateValidator equalsIssuerState(String k) {
-        return equalsIssuerState(Arrays.asList(k));
-    }
-
-    public CertificateValidator equalsIssuerCountry(String k) {
-        return equalsIssuerCountry(Arrays.asList(k));
-    }
-
-    /*
-        KeyUsage ::= BIT STRING {
-               digitalSignature        (0),
-               nonRepudiation          (1),
-               keyEncipherment         (2),
-               dataEncipherment        (3),
-               keyAgreement            (4),
-               keyCertSign             (5),
-               cRLSign                 (6),
-               encipherOnly            (7),
-               decipherOnly            (8) }
-     */
-    public CertificateValidator hasKUDigitalSignature() {
-        if (!x509Certificate.getKeyUsage()[0]) {
-            throw new CertificateValidatorException("Key Usage: DigitalSignature does not exist.");
-        }
-        checkedKUs.add(0);
-        return this;
-    }
-
-    public CertificateValidator hasKUNonRepudiation() {
-        if (!x509Certificate.getKeyUsage()[1]) {
-            throw new CertificateValidatorException("Key Usage: NonRepudiation does not exist.");
-        }
-        checkedKUs.add(1);
-        return this;
-    }
-
-    public CertificateValidator hasKUKeyEncipherment() {
-        if (!x509Certificate.getKeyUsage()[2]) {
-            throw new CertificateValidatorException("Key Usage: KeyEncipherment does not exist.");
-        }
-        checkedKUs.add(2);
-        return this;
-    }
-
-    public CertificateValidator hasKUDataEncipherment() {
-        if (!x509Certificate.getKeyUsage()[3]) {
-            throw new CertificateValidatorException("Key Usage: DataEncipherment does not exist.");
-        }
-        checkedKUs.add(3);
-        return this;
-    }
-
-    public CertificateValidator hasKUKeyAgreement() {
-        if (!x509Certificate.getKeyUsage()[4]) {
-            throw new CertificateValidatorException("Key Usage: KeyAgreement does not exist.");
-        }
-        checkedKUs.add(4);
-        return this;
-    }
-
-    public CertificateValidator hasKUKeyCertSign() {
-        if (!x509Certificate.getKeyUsage()[5]) {
-            throw new CertificateValidatorException("Key Usage: KeyCertSign does not exist.");
-        }
-        checkedKUs.add(5);
-        return this;
-    }
-
-    public CertificateValidator hasKUCRLSign() {
-        if (!x509Certificate.getKeyUsage()[6]) {
-            throw new CertificateValidatorException("Key Usage: CRLSign does not exist.");
-        }
-        checkedKUs.add(6);
-        return this;
-    }
-
-    public CertificateValidator hasKUEncipherOnly() {
-        if (!x509Certificate.getKeyUsage()[7]) {
-            throw new CertificateValidatorException("Key Usage: EncipherOnly does not exist.");
-        }
-        checkedKUs.add(7);
-        return this;
-    }
-
-    public CertificateValidator hasKUDecipherOnly() {
-        if (!x509Certificate.getKeyUsage()[8]) {
-            throw new CertificateValidatorException("Key Usage: DecipherOnly does not exist.");
-        }
-        checkedKUs.add(8);
-        return this;
     }
 
     public CertificateValidator noMoreKUs() {
