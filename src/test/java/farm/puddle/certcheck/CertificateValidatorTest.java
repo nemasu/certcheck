@@ -278,9 +278,9 @@ public class CertificateValidatorTest {
     @Test
     public void TestOrgID() throws Exception {
         new CertificateValidator( getExtTestPemFile() )
-                .equalsOrganizationIdentifier( "My Organization ID" );
+                .equalsSubjectOrganizationIdentifier( "My Organization ID" );
         new CertificateValidator( getTestExtPemString() )
-                .equalsOrganizationIdentifier( "My Organization ID" );
+                .equalsSubjectOrganizationIdentifier( "My Organization ID" );
     }
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {

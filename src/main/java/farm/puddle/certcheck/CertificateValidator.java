@@ -278,14 +278,6 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator equalsOrganizationIdentifier( String k ) {
-        List<String> sn = subjectPrincipal.get( "organizationIdentifier" );
-        if( !( sn.size() == 1 && sn.contains( k ) ) ) {
-            throw new CertificateValidatorException( "Organization Identifier " + subjectPrincipal.get( "organizationIdentifier" ) + " does not equal " + k );
-        }
-        return this;
-    }
-
     public CertificateValidator isValidWithDate(Date date) {
 
         try {
@@ -361,6 +353,14 @@ public class CertificateValidator {
         List<String> g = subjectPrincipal.get( "GIVENNAME" );
         if( !( g.size() == 1 && g.contains( k ) ) ) {
             throw new CertificateValidatorException( "Subject Given Name " + subjectPrincipal.get( "GIVENNAME" ) + " does not equal " + k );
+        }
+        return this;
+    }
+
+    public CertificateValidator equalsSubjectOrganizationIdentifier( String k ) {
+        List<String> sn = subjectPrincipal.get( "organizationIdentifier" );
+        if( !( sn.size() == 1 && sn.contains( k ) ) ) {
+            throw new CertificateValidatorException( "Organization Identifier " + subjectPrincipal.get( "organizationIdentifier" ) + " does not equal " + k );
         }
         return this;
     }
