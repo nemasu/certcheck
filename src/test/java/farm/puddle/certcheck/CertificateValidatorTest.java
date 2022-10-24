@@ -311,9 +311,9 @@ public class CertificateValidatorTest {
     @Test
     public void TestDNSerialNumber() throws Exception {
         new CertificateValidator( getExtTestPemFile() )
-                .equalsSubjectDNField( CertificateValidator.DNField.serialNumber, "My Serial Number" );
+                .equalsSubjectDNField( CertificateValidator.DNField.SerialNumber, "My Serial Number" );
         new CertificateValidator( getTestExtPemString() )
-                .equalsSubjectDNField( CertificateValidator.DNField.serialNumber, "My Serial Number" );
+                .equalsSubjectDNField( CertificateValidator.DNField.SerialNumber, "My Serial Number" );
     }
 
 

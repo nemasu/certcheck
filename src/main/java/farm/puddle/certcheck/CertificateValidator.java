@@ -38,7 +38,7 @@ public class CertificateValidator {
         Surname,
         GivenName,
         OrganizationIdentifier,
-        serialNumber
+        SerialNumber
     }
 
 
@@ -65,7 +65,7 @@ public class CertificateValidator {
         put(DNField.Surname, "SURNAME");
         put(DNField.GivenName, "GIVENNAME");
         put(DNField.OrganizationIdentifier, "organizationIdentifier");
-        put(DNField.serialNumber, "SERIALNUMBER");
+        put(DNField.SerialNumber, "SERIALNUMBER");
 
     }};
 
