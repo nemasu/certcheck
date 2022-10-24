@@ -191,7 +191,28 @@ public class CertificateValidatorTest {
                 .equalsSubjectDNField(CertificateValidator.DNField.Country, "JP");
     }
 
-    //TODO Add tests for Surname, Given Name
+    @Test
+    public void TestPEMSubjectPrincipalExt() throws Exception {
+        new CertificateValidator(getExtTestPemFile())
+                .equalsAlgorithmId("sha256withrsa")
+                .hasSubjectDNField(CertificateValidator.DNField.Email, true)
+                .equalsSubjectDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.CommonName, "domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
+                .equalsSubjectDNField(CertificateValidator.DNField.Organization, "TestCompany1")
+                .equalsSubjectDNField(CertificateValidator.DNField.State, "CA")
+                .equalsSubjectDNField(CertificateValidator.DNField.Country, "US");
+
+        new CertificateValidator(getTestExtPemString())
+                .equalsAlgorithmId( "sha256withrsa" )
+                .hasSubjectDNField(CertificateValidator.DNField.Email, true)
+                .equalsSubjectDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.CommonName, "domain.tld")
+                .equalsSubjectDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
+                .equalsSubjectDNField(CertificateValidator.DNField.Organization, "TestCompany1")
+                .equalsSubjectDNField(CertificateValidator.DNField.State, "CA")
+                .equalsSubjectDNField(CertificateValidator.DNField.Country, "US");
+    }
 
     @Test
     public void TestPEMIssuerPrincipal() throws Exception {
@@ -263,17 +284,17 @@ public class CertificateValidatorTest {
     @Test
     public void TestSKID() throws Exception {
         new CertificateValidator(getExtTestPemFile())
-                .hasSubjectKeyIdentifier("3de4ec44bb5618f7f98532ef61fb3d5f21775b75");
+                .hasSubjectKeyIdentifier("dd1448a8101bb77de14261c0e5c1288fc9dd8c1c");
         new CertificateValidator((getTestExtPemString()))
-                .hasSubjectKeyIdentifier("3de4ec44bb5618f7f98532ef61fb3d5f21775b75");
+                .hasSubjectKeyIdentifier("dd1448a8101bb77de14261c0e5c1288fc9dd8c1c");
     }
 
     @Test
     public void TestSerialNumber() throws Exception {
         new CertificateValidator( getExtTestPemFile() )
-                .equalsSerialNumber( new BigInteger( "6d4377de4cd39dd0b5ca50781d912bc1bc06f67f", 16) );
+                .equalsSerialNumber( new BigInteger( "5a09ef29656df199ac6d8f327346437eefb5da4d", 16) );
         new CertificateValidator( getTestExtPemString() )
-                .equalsSerialNumber( new BigInteger( "6d4377de4cd39dd0b5ca50781d912bc1bc06f67f", 16) );
+                .equalsSerialNumber( new BigInteger( "5a09ef29656df199ac6d8f327346437eefb5da4d", 16) );
 
         new CertificateValidator( getTestPemFile() )
                 .equalsSerialNumber( new BigInteger( "00aeb76a4c3d4631a0", 16) );
@@ -286,6 +307,15 @@ public class CertificateValidatorTest {
         new CertificateValidator( getTestExtPemString() )
                 .equalsSubjectDNField( CertificateValidator.DNField.OrganizationIdentifier, "My Organization ID" );
     }
+
+    @Test
+    public void TestDNSerialNumber() throws Exception {
+        new CertificateValidator( getExtTestPemFile() )
+                .equalsSubjectDNField( CertificateValidator.DNField.serialNumber, "My Serial Number" );
+        new CertificateValidator( getTestExtPemString() )
+                .equalsSubjectDNField( CertificateValidator.DNField.serialNumber, "My Serial Number" );
+    }
+
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         ClassLoader classLoader = getClass().getClassLoader();

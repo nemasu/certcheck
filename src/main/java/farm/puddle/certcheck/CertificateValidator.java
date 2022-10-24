@@ -38,6 +38,7 @@ public class CertificateValidator {
         Surname,
         GivenName,
         OrganizationIdentifier,
+        serialNumber
     }
 
 
@@ -64,6 +65,8 @@ public class CertificateValidator {
         put(DNField.Surname, "SURNAME");
         put(DNField.GivenName, "GIVENNAME");
         put(DNField.OrganizationIdentifier, "organizationIdentifier");
+        put(DNField.serialNumber, "SERIALNUMBER");
+
     }};
 
     /*
@@ -354,7 +357,7 @@ public class CertificateValidator {
     }
 
     public CertificateValidator equalsSubjectDNField(DNField dnField, List<String> k) {
-        String key = DNFieldToKey.get( dnField );
+        String key = DNFieldToKey.get(dnField);
 
         if (!subjectPrincipal.get(key).equals(k)) {
             throw new CertificateValidatorException(dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
@@ -363,21 +366,21 @@ public class CertificateValidator {
     }
 
     public CertificateValidator equalsSubjectDNField(DNField dnField, String k) {
-        String key = DNFieldToKey.get( dnField );
+        String key = DNFieldToKey.get(dnField);
 
-        List<String> sn = subjectPrincipal.get( key );
-        if( !( sn.size() == 1 && sn.contains( k ) ) ) {
+        List<String> sn = subjectPrincipal.get(key);
+        if(sn == null || !(sn.size() == 1 && sn.contains(k))) {
             throw new CertificateValidatorException(dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
 
     public CertificateValidator hasSubjectDNField(DNField dnField, boolean wantExists) {
-        String key = DNFieldToKey.get( dnField );
+        String key = DNFieldToKey.get(dnField);
 
-        List<String> sn = subjectPrincipal.get(key );
+        List<String> sn = subjectPrincipal.get(key);
 
-        if ( sn == null && wantExists) {
+        if (sn == null && wantExists) {
             throw new CertificateValidatorException(dnField.name() + " does not exist.");
         } else if ( sn != null && !wantExists ) {
             throw new CertificateValidatorException(dnField.name() + " does exist: " + sn.toString());
@@ -399,7 +402,7 @@ public class CertificateValidator {
         String key = DNFieldToKey.get( dnField );
 
         List<String> sn = issuerPrincipal.get( key );
-        if( !( sn.size() == 1 && sn.contains( k ) ) ) {
+        if(sn == null || !( sn.size() == 1 && sn.contains( k ) ) ) {
             throw new CertificateValidatorException(dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
         }
         return this;
