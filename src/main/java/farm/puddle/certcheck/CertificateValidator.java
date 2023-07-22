@@ -6,6 +6,8 @@ import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.CertificatePolicies;
+import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -26,6 +28,8 @@ import java.security.cert.*;
 import java.util.*;
 
 public class CertificateValidator {
+
+    private static final String CERTIFICATE_POLICY_OID = "2.5.29.32";
 
     public enum DNField {
         Email,
@@ -535,5 +539,103 @@ public class CertificateValidator {
         }
 
         return this;
+    }
+
+    //Note: Positions start at 0.
+    public CertificateValidator hasCertificatePolicy(int policyPosition, String policy) throws IOException {
+        if( policy == null ) {
+            throw new CertificateValidatorException("policy is null");
+        }
+
+        String certPolicy = getCertificatePolicyId(policyPosition);
+        if( certPolicy == null ) {
+            throw new CertificateValidatorException("Policy not found at position " + String.valueOf(policyPosition));
+        }
+
+        if( !policy.equals( certPolicy ) ) {
+            throw new CertificateValidatorException(policy + " does not match " + certPolicy );
+        }
+        return this;
+    }
+
+    public CertificateValidator hasCertificatePolicyQualifier(int policyPosition, List<Integer> location, String qualifier)
+        throws IOException {
+        if( qualifier == null ) {
+            throw new CertificateValidatorException("qualifier is null");
+        }
+
+        String certQualifier = getCertificatePolicyQualifierInfo(policyPosition, location);
+        if( certQualifier == null ) {
+            throw new CertificateValidatorException(qualifier + " not found at "
+                    + String.valueOf(policyPosition) + ": " + location.toString());
+        }
+
+        if( !certQualifier.equals(qualifier) ) {
+            throw new CertificateValidatorException(certQualifier + " is not equal to " + qualifier );
+        }
+
+        return this;
+    }
+
+    private String getCertificatePolicyId(int certificatePolicyPos)
+            throws IOException {
+
+        CertificatePolicies certificatePolicies = getCertificatePolicy(certificatePolicyPos);
+        if( certificatePolicies == null ) {
+            return null;
+        }
+
+        if (certificatePolicies.getPolicyInformation().length == 0) {
+            return null;
+        }
+
+        PolicyInformation[] policyInformation = certificatePolicies.getPolicyInformation();
+        if( policyInformation == null ) {
+            return null;
+        }
+
+        //Note: ID always seems to be at position 0, I can't seem to add multiple either so...hardcode it for now.
+        return policyInformation[0].getPolicyIdentifier().getId();
+    }
+
+    private String getCertificatePolicyQualifierInfo(int certificatePolicyPos, List<Integer> location)
+        throws IOException {
+
+        CertificatePolicies certificatePolicies = getCertificatePolicy(certificatePolicyPos);
+        if( certificatePolicies == null ) {
+            return null;
+        }
+
+        PolicyInformation[] policyInformation = certificatePolicies.getPolicyInformation();
+        if( policyInformation == null ) {
+            return null;
+        }
+
+        ASN1Sequence qualifiers = policyInformation[0].getPolicyQualifiers();
+        DLSequence seq = (DLSequence) qualifiers.getObjectAt(location.get(0));
+        for( Integer loc : location.subList(1,location.size()-1) ) {
+            seq = ((DLSequence) seq.getObjectAt(loc));
+        }
+
+        Object ret = seq.getObjectAt(location.get(location.size()-1));
+
+        return ret.toString();
+    }
+
+    private CertificatePolicies getCertificatePolicy(int certificatePolicyPos)
+        throws IOException {
+        byte[] extPolicyBytes = this.x509Certificate.getExtensionValue(CERTIFICATE_POLICY_OID);
+        if (extPolicyBytes == null) {
+            return null;
+        }
+
+        DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extPolicyBytes)).readObject());
+        ASN1Sequence seq = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject();
+
+        if (seq.size() <= (certificatePolicyPos)) {
+            return null;
+        }
+
+        return new CertificatePolicies(PolicyInformation.getInstance(seq.getObjectAt(certificatePolicyPos)));
     }
 }

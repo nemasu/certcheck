@@ -14,10 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.util.*;
 
 public class CertificateValidatorTest {
 
@@ -284,17 +281,17 @@ public class CertificateValidatorTest {
     @Test
     public void TestSKID() throws Exception {
         new CertificateValidator(getExtTestPemFile())
-                .hasSubjectKeyIdentifier("dd1448a8101bb77de14261c0e5c1288fc9dd8c1c");
+                .hasSubjectKeyIdentifier("a5e8ce3db28dc171eed549e83f31b0b331ea8d95");
         new CertificateValidator((getTestExtPemString()))
-                .hasSubjectKeyIdentifier("dd1448a8101bb77de14261c0e5c1288fc9dd8c1c");
+                .hasSubjectKeyIdentifier("a5e8ce3db28dc171eed549e83f31b0b331ea8d95");
     }
 
     @Test
     public void TestSerialNumber() throws Exception {
         new CertificateValidator( getExtTestPemFile() )
-                .equalsSerialNumber( new BigInteger( "5a09ef29656df199ac6d8f327346437eefb5da4d", 16) );
+                .equalsSerialNumber( new BigInteger( "314873837d23bca6294d1f01089c3d41b63537a2", 16) );
         new CertificateValidator( getTestExtPemString() )
-                .equalsSerialNumber( new BigInteger( "5a09ef29656df199ac6d8f327346437eefb5da4d", 16) );
+                .equalsSerialNumber( new BigInteger( "314873837d23bca6294d1f01089c3d41b63537a2", 16) );
 
         new CertificateValidator( getTestPemFile() )
                 .equalsSerialNumber( new BigInteger( "00aeb76a4c3d4631a0", 16) );
@@ -316,6 +313,49 @@ public class CertificateValidatorTest {
                 .equalsSubjectDNField( CertificateValidator.DNField.SerialNumber, "My Serial Number" );
     }
 
+    @Test
+    public void TestCertificatePolicy() throws Exception {
+        new CertificateValidator( getExtTestPemFile() )
+                .hasCertificatePolicy(0, "1.2.3.4")
+                .hasCertificatePolicy(1, "1.5.6.7.8")
+                .hasCertificatePolicy(2, "1.3.5.8");
+        new CertificateValidator( getTestExtPemString() )
+                .hasCertificatePolicy(0, "1.2.3.4")
+                .hasCertificatePolicy(1, "1.5.6.7.8")
+                .hasCertificatePolicy(2, "1.3.5.8");
+    }
+
+    @Test
+    public void TestCertificatePolicyQualifier() throws Exception {
+        List<Integer> location = new ArrayList<>();
+        location.add(1);
+        location.add(1);
+        new CertificateValidator( getExtTestPemFile() )
+                .hasCertificatePolicyQualifier(2, location, "http://my.your.example.com/");
+        new CertificateValidator( getTestExtPemString() )
+                .hasCertificatePolicyQualifier(2, location, "http://my.your.example.com/");
+
+        location.clear();
+        location.add(2);
+        location.add(1);
+        location.add(0);
+        location.add(1);
+        location.add(1);
+        new CertificateValidator( getExtTestPemFile() )
+                .hasCertificatePolicyQualifier(2, location, "2");
+        new CertificateValidator( getTestExtPemString() )
+                .hasCertificatePolicyQualifier(2, location, "2");
+
+        location.clear();
+        location.add(2);
+        location.add(1);
+        location.add(1);
+        new CertificateValidator( getExtTestPemFile() )
+                .hasCertificatePolicyQualifier(2, location, "Explicit Text Here");
+        new CertificateValidator( getTestExtPemString() )
+                .hasCertificatePolicyQualifier(2, location, "Explicit Text Here");
+
+    }
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         ClassLoader classLoader = getClass().getClassLoader();
