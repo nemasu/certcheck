@@ -30,6 +30,7 @@ import java.util.*;
 public class CertificateValidator {
 
     private static final String CERTIFICATE_POLICY_OID = "2.5.29.32";
+    private static final String CERTIFICATE_SUBJECT_KEY_IDENTIFIER_OID = "2.5.29.14";
 
     public enum DNField {
         Email,
@@ -528,7 +529,11 @@ public class CertificateValidator {
 
     public CertificateValidator hasSubjectKeyIdentifier(String s) {
 
-        byte[] extensionValue = x509Certificate.getExtensionValue("2.5.29.14");
+        byte[] extensionValue = x509Certificate.getExtensionValue(CERTIFICATE_SUBJECT_KEY_IDENTIFIER_OID);
+        if( extensionValue == null ) {
+            throw new CertificateValidatorException("Subject Key Identifier does not exist.");
+        }
+
         byte[] subjectOctets = DEROctetString.getInstance(extensionValue).getOctets();
         SubjectKeyIdentifier.getInstance(subjectOctets);
         byte[] keyIdentifierBytes = SubjectKeyIdentifier.getInstance(subjectOctets).getKeyIdentifier();
@@ -637,5 +642,26 @@ public class CertificateValidator {
         }
 
         return new CertificatePolicies(PolicyInformation.getInstance(seq.getObjectAt(certificatePolicyPos)));
+    }
+
+    //This is used for arbitrary OIDs with String values
+    public CertificateValidator hasOIDStringValue(String oid, String value) {
+
+        if( oid == null || value == null ) {
+            throw new CertificateValidatorException("null value provided.");
+        }
+
+        byte[] extensionValue = x509Certificate.getExtensionValue(oid);
+        if( extensionValue == null ) {
+            throw new CertificateValidatorException(oid + " does not exist.");
+        }
+
+        byte[] stringOctects = DEROctetString.getInstance(extensionValue).getOctets();
+        String str = DERUTF8String.getInstance(stringOctects).getString();
+        if(!value.equals(str)) {
+            throw new CertificateValidatorException("provided value " + value + " does not equal " + str);
+        }
+
+        return this;
     }
 }

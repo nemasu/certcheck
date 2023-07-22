@@ -281,17 +281,17 @@ public class CertificateValidatorTest {
     @Test
     public void TestSKID() throws Exception {
         new CertificateValidator(getExtTestPemFile())
-                .hasSubjectKeyIdentifier("a5e8ce3db28dc171eed549e83f31b0b331ea8d95");
+                .hasSubjectKeyIdentifier("10d33da0e3ea3d8e3f16450d7e65ab0b005f4a66");
         new CertificateValidator((getTestExtPemString()))
-                .hasSubjectKeyIdentifier("a5e8ce3db28dc171eed549e83f31b0b331ea8d95");
+                .hasSubjectKeyIdentifier("10d33da0e3ea3d8e3f16450d7e65ab0b005f4a66");
     }
 
     @Test
     public void TestSerialNumber() throws Exception {
         new CertificateValidator( getExtTestPemFile() )
-                .equalsSerialNumber( new BigInteger( "314873837d23bca6294d1f01089c3d41b63537a2", 16) );
+                .equalsSerialNumber( new BigInteger( "314873837d23bca6294d1f01089c3d41b63537aa", 16) );
         new CertificateValidator( getTestExtPemString() )
-                .equalsSerialNumber( new BigInteger( "314873837d23bca6294d1f01089c3d41b63537a2", 16) );
+                .equalsSerialNumber( new BigInteger( "314873837d23bca6294d1f01089c3d41b63537aa", 16) );
 
         new CertificateValidator( getTestPemFile() )
                 .equalsSerialNumber( new BigInteger( "00aeb76a4c3d4631a0", 16) );
@@ -355,6 +355,14 @@ public class CertificateValidatorTest {
         new CertificateValidator( getTestExtPemString() )
                 .hasCertificatePolicyQualifier(2, location, "Explicit Text Here");
 
+    }
+
+    @Test
+    public void hasOIDStringValue() throws Exception {
+        new CertificateValidator( getExtTestPemFile() )
+                .hasOIDStringValue("1.3.6.1.4.1.311.25.2","ABCDE-129824-usau08aeu80");
+        new CertificateValidator( getTestExtPemString() )
+                .hasOIDStringValue("1.3.6.1.4.1.311.25.2","ABCDE-129824-usau08aeu80");
     }
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
