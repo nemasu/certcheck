@@ -178,7 +178,7 @@ public class CertificateValidatorTest {
                 .hasIssuerDNField(CertificateValidator.DNField.OrganizationIdentifier, false);
 
         new CertificateValidator(getTestPemString())
-                .equalsAlgorithmId( "sha1withrsa" )
+                .equalsAlgorithmId("sha1withrsa")
                 .equalsSubjectDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
                 .equalsSubjectDNField(CertificateValidator.DNField.CommonName, "domain.tld")
                 .equalsSubjectDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
@@ -201,7 +201,7 @@ public class CertificateValidatorTest {
                 .equalsSubjectDNField(CertificateValidator.DNField.Country, "US");
 
         new CertificateValidator(getTestExtPemString())
-                .equalsAlgorithmId( "sha256withrsa" )
+                .equalsAlgorithmId("sha256withrsa")
                 .hasSubjectDNField(CertificateValidator.DNField.Email, true)
                 .equalsSubjectDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
                 .equalsSubjectDNField(CertificateValidator.DNField.CommonName, "domain.tld")
@@ -213,8 +213,8 @@ public class CertificateValidatorTest {
 
     @Test
     public void TestPEMIssuerPrincipal() throws Exception {
-        new CertificateValidator( getTestPemFile() )
-                .equalsAlgorithmId( "sha1withrsa" )
+        new CertificateValidator(getTestPemFile())
+                .equalsAlgorithmId("sha1withrsa")
                 .equalsIssuerDNField(CertificateValidator.DNField.Email, "admin@domain.tld")
                 .equalsIssuerDNField(CertificateValidator.DNField.CommonName, "domain.tld")
                 .equalsIssuerDNField(CertificateValidator.DNField.OrganizationalUnit, "DevSec")
@@ -257,7 +257,7 @@ public class CertificateValidatorTest {
                 .hasUPN("admin@domain.tld")
                 .hasRFC822Name("admin@domain.tld");
         new CertificateValidator(getTestExtPemString())
-                .hasUPN("admin@domain.tld") 
+                .hasUPN("admin@domain.tld")
                 .hasRFC822Name("admin@domain.tld");
     }
 
@@ -288,38 +288,38 @@ public class CertificateValidatorTest {
 
     @Test
     public void TestSerialNumber() throws Exception {
-        new CertificateValidator( getExtTestPemFile() )
-                .equalsSerialNumber( new BigInteger( "314873837d23bca6294d1f01089c3d41b63537aa", 16) );
-        new CertificateValidator( getTestExtPemString() )
-                .equalsSerialNumber( new BigInteger( "314873837d23bca6294d1f01089c3d41b63537aa", 16) );
+        new CertificateValidator(getExtTestPemFile())
+                .equalsSerialNumber(new BigInteger("314873837d23bca6294d1f01089c3d41b63537aa", 16));
+        new CertificateValidator(getTestExtPemString())
+                .equalsSerialNumber(new BigInteger("314873837d23bca6294d1f01089c3d41b63537aa", 16));
 
-        new CertificateValidator( getTestPemFile() )
-                .equalsSerialNumber( new BigInteger( "00aeb76a4c3d4631a0", 16) );
+        new CertificateValidator(getTestPemFile())
+                .equalsSerialNumber(new BigInteger("00aeb76a4c3d4631a0", 16));
     }
 
     @Test
     public void TestOrgID() throws Exception {
-        new CertificateValidator( getExtTestPemFile() )
-                .equalsSubjectDNField( CertificateValidator.DNField.OrganizationIdentifier, "My Organization ID" );
-        new CertificateValidator( getTestExtPemString() )
-                .equalsSubjectDNField( CertificateValidator.DNField.OrganizationIdentifier, "My Organization ID" );
+        new CertificateValidator(getExtTestPemFile())
+                .equalsSubjectDNField(CertificateValidator.DNField.OrganizationIdentifier, "My Organization ID");
+        new CertificateValidator(getTestExtPemString())
+                .equalsSubjectDNField(CertificateValidator.DNField.OrganizationIdentifier, "My Organization ID");
     }
 
     @Test
     public void TestDNSerialNumber() throws Exception {
-        new CertificateValidator( getExtTestPemFile() )
-                .equalsSubjectDNField( CertificateValidator.DNField.SerialNumber, "My Serial Number" );
-        new CertificateValidator( getTestExtPemString() )
-                .equalsSubjectDNField( CertificateValidator.DNField.SerialNumber, "My Serial Number" );
+        new CertificateValidator(getExtTestPemFile())
+                .equalsSubjectDNField(CertificateValidator.DNField.SerialNumber, "My Serial Number");
+        new CertificateValidator(getTestExtPemString())
+                .equalsSubjectDNField(CertificateValidator.DNField.SerialNumber, "My Serial Number");
     }
 
     @Test
     public void TestCertificatePolicy() throws Exception {
-        new CertificateValidator( getExtTestPemFile() )
+        new CertificateValidator(getExtTestPemFile())
                 .hasCertificatePolicy(0, "1.2.3.4")
                 .hasCertificatePolicy(1, "1.5.6.7.8")
                 .hasCertificatePolicy(2, "1.3.5.8");
-        new CertificateValidator( getTestExtPemString() )
+        new CertificateValidator(getTestExtPemString())
                 .hasCertificatePolicy(0, "1.2.3.4")
                 .hasCertificatePolicy(1, "1.5.6.7.8")
                 .hasCertificatePolicy(2, "1.3.5.8");
@@ -330,9 +330,9 @@ public class CertificateValidatorTest {
         List<Integer> location = new ArrayList<>();
         location.add(1);
         location.add(1);
-        new CertificateValidator( getExtTestPemFile() )
+        new CertificateValidator(getExtTestPemFile())
                 .hasCertificatePolicyQualifier(2, location, "http://my.your.example.com/");
-        new CertificateValidator( getTestExtPemString() )
+        new CertificateValidator(getTestExtPemString())
                 .hasCertificatePolicyQualifier(2, location, "http://my.your.example.com/");
 
         location.clear();
@@ -341,28 +341,28 @@ public class CertificateValidatorTest {
         location.add(0);
         location.add(1);
         location.add(1);
-        new CertificateValidator( getExtTestPemFile() )
+        new CertificateValidator(getExtTestPemFile())
                 .hasCertificatePolicyQualifier(2, location, "2");
-        new CertificateValidator( getTestExtPemString() )
+        new CertificateValidator(getTestExtPemString())
                 .hasCertificatePolicyQualifier(2, location, "2");
 
         location.clear();
         location.add(2);
         location.add(1);
         location.add(1);
-        new CertificateValidator( getExtTestPemFile() )
+        new CertificateValidator(getExtTestPemFile())
                 .hasCertificatePolicyQualifier(2, location, "Explicit Text Here");
-        new CertificateValidator( getTestExtPemString() )
+        new CertificateValidator(getTestExtPemString())
                 .hasCertificatePolicyQualifier(2, location, "Explicit Text Here");
 
     }
 
     @Test
     public void hasOIDStringValue() throws Exception {
-        new CertificateValidator( getExtTestPemFile() )
-                .hasOIDStringValue("1.3.6.1.4.1.311.25.2","ABCDE-129824-usau08aeu80");
-        new CertificateValidator( getTestExtPemString() )
-                .hasOIDStringValue("1.3.6.1.4.1.311.25.2","ABCDE-129824-usau08aeu80");
+        new CertificateValidator(getExtTestPemFile())
+                .hasOIDStringValue("1.3.6.1.4.1.311.25.2", "ABCDE-129824-usau08aeu80");
+        new CertificateValidator(getTestExtPemString())
+                .hasOIDStringValue("1.3.6.1.4.1.311.25.2", "ABCDE-129824-usau08aeu80");
     }
 
     private PublicKey getInvalidTestPublicKey() throws URISyntaxException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {

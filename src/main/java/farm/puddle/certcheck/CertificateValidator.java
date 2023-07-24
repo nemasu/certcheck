@@ -31,35 +31,7 @@ public class CertificateValidator {
 
     private static final String CERTIFICATE_POLICY_OID = "2.5.29.32";
     private static final String CERTIFICATE_SUBJECT_KEY_IDENTIFIER_OID = "2.5.29.14";
-
-    public enum DNField {
-        Email,
-        CommonName,
-        OrganizationalUnit,
-        Organization,
-        Locality,
-        State,
-        Country,
-        Surname,
-        GivenName,
-        OrganizationIdentifier,
-        SerialNumber
-    }
-
-
-    public enum KUField {
-        digitalSignature,
-        nonRepudiation,
-        keyEncipherment,
-        dataEncipherment,
-        keyAgreement,
-        keyCertSign,
-        cRLSign,
-        encipherOnly,
-        decipherOnly
-    }
-
-    private static final Map<DNField,String> DNFieldToKey = new HashMap<DNField, String>(){{
+    private static final Map<DNField, String> DNFieldToKey = new HashMap<DNField, String>() {{
         put(DNField.Email, "E");
         put(DNField.CommonName, "CN");
         put(DNField.OrganizationalUnit, "OU");
@@ -73,7 +45,6 @@ public class CertificateValidator {
         put(DNField.SerialNumber, "SERIALNUMBER");
 
     }};
-
     /*
         KeyUsage ::= BIT STRING {
                digitalSignature        (0),
@@ -86,7 +57,7 @@ public class CertificateValidator {
                encipherOnly            (7),
                decipherOnly            (8) }
      */
-    private static final Map<KUField,Integer> KUFieldToKey = new HashMap<KUField, Integer>(){{
+    private static final Map<KUField, Integer> KUFieldToKey = new HashMap<KUField, Integer>() {{
         put(KUField.digitalSignature, 0);
         put(KUField.nonRepudiation, 1);
         put(KUField.keyEncipherment, 2);
@@ -103,16 +74,14 @@ public class CertificateValidator {
         Security.addProvider(new BouncyCastleProvider());
     }
 
+    private final List<Integer> checkedKUs = new ArrayList<>();
+    private final List<String> checkedEKUs = new ArrayList<>();
     private X509Certificate x509Certificate;
     private Map<String, List<String>> subjectPrincipal;
     private Map<String, List<String>> issuerPrincipal;
-    private List<Integer> checkedKUs = new ArrayList<>();
-    private List<String> checkedEKUs = new ArrayList<>();
 
     private CertificateValidator() {
     }
-
-    //TODO - need pkcs12 from file.
 
     public CertificateValidator(X509Certificate x509Certificate) {
         this.x509Certificate = x509Certificate;
@@ -188,6 +157,8 @@ public class CertificateValidator {
         }
     }
 
+    //TODO - need pkcs12 from file.
+
     public CertificateValidator(File pemFile)
             throws CertificateValidatorException,
             CertificateException,
@@ -255,7 +226,8 @@ public class CertificateValidator {
         }
     }
 
-    public CertificateValidator(String base64PKCS12, String password) {
+    public CertificateValidator(String base64PKCS12, String password)
+            throws CertificateValidatorException {
         byte[] decodedCert = java.util.Base64.getDecoder().decode(base64PKCS12);
         try {
 
@@ -295,7 +267,7 @@ public class CertificateValidator {
                     derTaggedObject = (DERTaggedObject) dlSequence.getObjectAt(1);
                     return ((DERTaggedObject) derTaggedObject.getObject()).getObject().toString();
                 } else if (asn1Primitive instanceof DLTaggedObject) {
-                    return ((DLTaggedObject)((DLSequence)((DLTaggedObject) asn1Primitive).getObject()).getObjectAt(1)).getObject().toString();
+                    return ((DLTaggedObject) ((DLSequence) ((DLTaggedObject) asn1Primitive).getObject()).getObjectAt(1)).getObject().toString();
                 }
             } else if (item instanceof String) {
                 return (String) item;
@@ -326,32 +298,35 @@ public class CertificateValidator {
         return principal;
     }
 
-    public CertificateValidator isValidWithPublicKey(PublicKey publicKey) throws CertificateValidatorException {
+    public CertificateValidator isValidWithPublicKey(PublicKey publicKey)
+            throws CertificateValidatorException {
         try {
             x509Certificate.verify(publicKey);
-        } catch (NoSuchProviderException | CertificateException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+        } catch (NoSuchProviderException | CertificateException | NoSuchAlgorithmException | InvalidKeyException |
+                 SignatureException e) {
             throw new CertificateValidatorException(e);
         }
         return this;
     }
 
-    public CertificateValidator equalsAlgorithmId(String algorithmId) {
-
+    public CertificateValidator equalsAlgorithmId(String algorithmId)
+            throws CertificateValidatorException {
         if (!algorithmId.equalsIgnoreCase(x509Certificate.getSigAlgName())) {
             throw new CertificateValidatorException(x509Certificate.getSigAlgName() + " does not match " + algorithmId);
         }
         return this;
     }
 
-    public CertificateValidator equalsSerialNumber( BigInteger serialNumber ) {
-        if (!x509Certificate.getSerialNumber().equals( serialNumber )) {
+    public CertificateValidator equalsSerialNumber(BigInteger serialNumber)
+            throws CertificateValidatorException {
+        if (!x509Certificate.getSerialNumber().equals(serialNumber)) {
             throw new CertificateValidatorException(x509Certificate.getSerialNumber() + " does not match " + serialNumber);
         }
         return this;
     }
 
-    public CertificateValidator isValidWithDate(Date date) {
-
+    public CertificateValidator isValidWithDate(Date date)
+            throws CertificateValidatorException {
         try {
             x509Certificate.checkValidity(date);
         } catch (CertificateNotYetValidException | CertificateExpiredException e) {
@@ -361,7 +336,8 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator equalsSubjectDNField(DNField dnField, List<String> k) {
+    public CertificateValidator equalsSubjectDNField(DNField dnField, List<String> k)
+            throws CertificateValidatorException {
         String key = DNFieldToKey.get(dnField);
 
         if (!subjectPrincipal.get(key).equals(k)) {
@@ -370,32 +346,35 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator equalsSubjectDNField(DNField dnField, String k) {
+    public CertificateValidator equalsSubjectDNField(DNField dnField, String k)
+            throws CertificateValidatorException {
         String key = DNFieldToKey.get(dnField);
 
         List<String> sn = subjectPrincipal.get(key);
-        if(sn == null || !(sn.size() == 1 && sn.contains(k))) {
+        if (sn == null || !(sn.size() == 1 && sn.contains(k))) {
             throw new CertificateValidatorException(dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
 
-    public CertificateValidator hasSubjectDNField(DNField dnField, boolean wantExists) {
+    public CertificateValidator hasSubjectDNField(DNField dnField, boolean wantExists)
+            throws CertificateValidatorException {
         String key = DNFieldToKey.get(dnField);
 
         List<String> sn = subjectPrincipal.get(key);
 
         if (sn == null && wantExists) {
             throw new CertificateValidatorException(dnField.name() + " does not exist.");
-        } else if ( sn != null && !wantExists ) {
-            throw new CertificateValidatorException(dnField.name() + " does exist: " + sn.toString());
+        } else if (sn != null && !wantExists) {
+            throw new CertificateValidatorException(dnField.name() + " does exist: " + sn);
         }
 
         return this;
     }
 
-    public CertificateValidator equalsIssuerDNField(DNField dnField, List<String> k) {
-        String key = DNFieldToKey.get( dnField );
+    public CertificateValidator equalsIssuerDNField(DNField dnField, List<String> k)
+            throws CertificateValidatorException {
+        String key = DNFieldToKey.get(dnField);
 
         if (!issuerPrincipal.get(key).equals(k)) {
             throw new CertificateValidatorException(dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
@@ -403,32 +382,35 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator equalsIssuerDNField(DNField dnField, String k) {
-        String key = DNFieldToKey.get( dnField );
+    public CertificateValidator equalsIssuerDNField(DNField dnField, String k)
+            throws CertificateValidatorException {
+        String key = DNFieldToKey.get(dnField);
 
-        List<String> sn = issuerPrincipal.get( key );
-        if(sn == null || !( sn.size() == 1 && sn.contains( k ) ) ) {
+        List<String> sn = issuerPrincipal.get(key);
+        if (sn == null || !(sn.size() == 1 && sn.contains(k))) {
             throw new CertificateValidatorException(dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
 
-    public CertificateValidator hasIssuerDNField(DNField dnField, boolean wantExists) {
+    public CertificateValidator hasIssuerDNField(DNField dnField, boolean wantExists)
+            throws CertificateValidatorException {
         String key = DNFieldToKey.get(dnField);
 
         List<String> sn = issuerPrincipal.get(key);
 
-        if ( sn == null && wantExists) {
+        if (sn == null && wantExists) {
             throw new CertificateValidatorException(dnField.name() + " does not exist.");
-        } else if ( sn != null && !wantExists ) {
-            throw new CertificateValidatorException(dnField.name() + " does exist: " + sn.toString());
+        } else if (sn != null && !wantExists) {
+            throw new CertificateValidatorException(dnField.name() + " does exist: " + sn);
         }
 
         return this;
     }
 
-    public CertificateValidator hasKU(KUField kuField) {
-        Integer key = KUFieldToKey.get( kuField );
+    public CertificateValidator hasKU(KUField kuField)
+            throws CertificateValidatorException {
+        Integer key = KUFieldToKey.get(kuField);
         if (!x509Certificate.getKeyUsage()[key]) {
             throw new CertificateValidatorException("Key Usage: " + kuField.name() + " does not exist.");
         }
@@ -437,7 +419,8 @@ public class CertificateValidator {
 
     }
 
-    public CertificateValidator noMoreKUs() {
+    public CertificateValidator noMoreKUs()
+            throws CertificateValidatorException {
         boolean[] KUs = x509Certificate.getKeyUsage();
         for (int i = 0; i < KUs.length; i++) {
             if (KUs[i] && !checkedKUs.contains(i)) {
@@ -447,7 +430,8 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator hasExtendedKeyUsage(String eku) {
+    public CertificateValidator hasExtendedKeyUsage(String eku)
+            throws CertificateValidatorException {
         try {
             if (!x509Certificate.getExtendedKeyUsage().contains(eku)) {
                 throw new CertificateValidatorException("Extended Key Usage " + eku + "  not found.");
@@ -459,7 +443,8 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator noMoreEKUs() {
+    public CertificateValidator noMoreEKUs()
+            throws CertificateValidatorException {
         try {
             for (final String EKU : x509Certificate.getExtendedKeyUsage()) {
                 if (!checkedEKUs.contains(EKU)) {
@@ -484,7 +469,8 @@ public class CertificateValidator {
             iPAddress                       [7]     OCTET STRING,
             registeredID                    [8]     OBJECT IDENTIFIER}
      */
-    public CertificateValidator hasUPN(String upn) {
+    public CertificateValidator hasUPN(String upn)
+            throws CertificateValidatorException {
         try {
             final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
 
@@ -506,7 +492,8 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator hasRFC822Name(String name) {
+    public CertificateValidator hasRFC822Name(String name)
+            throws CertificateValidatorException {
         try {
             final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
             String certName = null;
@@ -527,10 +514,11 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator hasSubjectKeyIdentifier(String s) {
+    public CertificateValidator hasSubjectKeyIdentifier(String s)
+            throws CertificateValidatorException {
 
         byte[] extensionValue = x509Certificate.getExtensionValue(CERTIFICATE_SUBJECT_KEY_IDENTIFIER_OID);
-        if( extensionValue == null ) {
+        if (extensionValue == null) {
             throw new CertificateValidatorException("Subject Key Identifier does not exist.");
         }
 
@@ -539,7 +527,7 @@ public class CertificateValidator {
         byte[] keyIdentifierBytes = SubjectKeyIdentifier.getInstance(subjectOctets).getKeyIdentifier();
         String keyIdentifierString = Hex.toHexString(keyIdentifierBytes).toLowerCase();
 
-        if( !s.toLowerCase().equals(keyIdentifierString)) {
+        if (!s.toLowerCase().equals(keyIdentifierString)) {
             throw new CertificateValidatorException("Subject Key Identifier " + s + " does not exist. It is " + keyIdentifierString);
         }
 
@@ -547,36 +535,49 @@ public class CertificateValidator {
     }
 
     //Note: Positions start at 0.
-    public CertificateValidator hasCertificatePolicy(int policyPosition, String policy) throws IOException {
-        if( policy == null ) {
+    public CertificateValidator hasCertificatePolicy(int policyPosition, String policy)
+            throws CertificateValidatorException {
+        if (policy == null) {
             throw new CertificateValidatorException("policy is null");
         }
 
-        String certPolicy = getCertificatePolicyId(policyPosition);
-        if( certPolicy == null ) {
-            throw new CertificateValidatorException("Policy not found at position " + String.valueOf(policyPosition));
+        String certPolicy;
+        try {
+            certPolicy = getCertificatePolicyId(policyPosition);
+        } catch (IOException e) {
+            throw new CertificateValidatorException(e);
         }
 
-        if( !policy.equals( certPolicy ) ) {
-            throw new CertificateValidatorException(policy + " does not match " + certPolicy );
+        if (certPolicy == null) {
+            throw new CertificateValidatorException("Policy not found at position " + policyPosition);
+        }
+
+        if (!policy.equals(certPolicy)) {
+            throw new CertificateValidatorException(policy + " does not match " + certPolicy);
         }
         return this;
     }
 
     public CertificateValidator hasCertificatePolicyQualifier(int policyPosition, List<Integer> location, String qualifier)
-        throws IOException {
-        if( qualifier == null ) {
+            throws CertificateValidatorException {
+        if (qualifier == null) {
             throw new CertificateValidatorException("qualifier is null");
         }
 
-        String certQualifier = getCertificatePolicyQualifierInfo(policyPosition, location);
-        if( certQualifier == null ) {
-            throw new CertificateValidatorException(qualifier + " not found at "
-                    + String.valueOf(policyPosition) + ": " + location.toString());
+        String certQualifier;
+        try {
+            certQualifier = getCertificatePolicyQualifierInfo(policyPosition, location);
+        } catch (IOException e) {
+            throw new CertificateValidatorException(e);
         }
 
-        if( !certQualifier.equals(qualifier) ) {
-            throw new CertificateValidatorException(certQualifier + " is not equal to " + qualifier );
+        if (certQualifier == null) {
+            throw new CertificateValidatorException(qualifier + " not found at "
+                    + policyPosition + ": " + location.toString());
+        }
+
+        if (!certQualifier.equals(qualifier)) {
+            throw new CertificateValidatorException(certQualifier + " is not equal to " + qualifier);
         }
 
         return this;
@@ -586,7 +587,7 @@ public class CertificateValidator {
             throws IOException {
 
         CertificatePolicies certificatePolicies = getCertificatePolicy(certificatePolicyPos);
-        if( certificatePolicies == null ) {
+        if (certificatePolicies == null) {
             return null;
         }
 
@@ -595,7 +596,7 @@ public class CertificateValidator {
         }
 
         PolicyInformation[] policyInformation = certificatePolicies.getPolicyInformation();
-        if( policyInformation == null ) {
+        if (policyInformation == null) {
             return null;
         }
 
@@ -604,31 +605,31 @@ public class CertificateValidator {
     }
 
     private String getCertificatePolicyQualifierInfo(int certificatePolicyPos, List<Integer> location)
-        throws IOException {
+            throws IOException {
 
         CertificatePolicies certificatePolicies = getCertificatePolicy(certificatePolicyPos);
-        if( certificatePolicies == null ) {
+        if (certificatePolicies == null) {
             return null;
         }
 
         PolicyInformation[] policyInformation = certificatePolicies.getPolicyInformation();
-        if( policyInformation == null ) {
+        if (policyInformation == null) {
             return null;
         }
 
         ASN1Sequence qualifiers = policyInformation[0].getPolicyQualifiers();
         DLSequence seq = (DLSequence) qualifiers.getObjectAt(location.get(0));
-        for( Integer loc : location.subList(1,location.size()-1) ) {
+        for (Integer loc : location.subList(1, location.size() - 1)) {
             seq = ((DLSequence) seq.getObjectAt(loc));
         }
 
-        Object ret = seq.getObjectAt(location.get(location.size()-1));
+        Object ret = seq.getObjectAt(location.get(location.size() - 1));
 
         return ret.toString();
     }
 
     private CertificatePolicies getCertificatePolicy(int certificatePolicyPos)
-        throws IOException {
+            throws IOException {
         byte[] extPolicyBytes = this.x509Certificate.getExtensionValue(CERTIFICATE_POLICY_OID);
         if (extPolicyBytes == null) {
             return null;
@@ -645,23 +646,50 @@ public class CertificateValidator {
     }
 
     //This is used for arbitrary OIDs with String values
-    public CertificateValidator hasOIDStringValue(String oid, String value) {
+    public CertificateValidator hasOIDStringValue(String oid, String value)
+            throws CertificateValidatorException {
 
-        if( oid == null || value == null ) {
+        if (oid == null || value == null) {
             throw new CertificateValidatorException("null value provided.");
         }
 
         byte[] extensionValue = x509Certificate.getExtensionValue(oid);
-        if( extensionValue == null ) {
+        if (extensionValue == null) {
             throw new CertificateValidatorException(oid + " does not exist.");
         }
 
         byte[] stringOctects = DEROctetString.getInstance(extensionValue).getOctets();
         String str = DERUTF8String.getInstance(stringOctects).getString();
-        if(!value.equals(str)) {
+        if (!value.equals(str)) {
             throw new CertificateValidatorException("provided value " + value + " does not equal " + str);
         }
 
         return this;
+    }
+
+    public enum DNField {
+        Email,
+        CommonName,
+        OrganizationalUnit,
+        Organization,
+        Locality,
+        State,
+        Country,
+        Surname,
+        GivenName,
+        OrganizationIdentifier,
+        SerialNumber
+    }
+
+    public enum KUField {
+        digitalSignature,
+        nonRepudiation,
+        keyEncipherment,
+        dataEncipherment,
+        keyAgreement,
+        keyCertSign,
+        cRLSign,
+        encipherOnly,
+        decipherOnly
     }
 }
