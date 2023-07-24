@@ -23,6 +23,7 @@ import org.bouncycastle.util.io.pem.PemReader;
 import javax.security.auth.x500.X500Principal;
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.*;
 import java.util.*;
@@ -31,6 +32,11 @@ public class CertificateValidator {
 
     private static final String CERTIFICATE_POLICY_OID = "2.5.29.32";
     private static final String CERTIFICATE_SUBJECT_KEY_IDENTIFIER_OID = "2.5.29.14";
+
+    //See https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/e563cff8-1af6-4e6f-a655-7571ca482e71
+    private static final String CERTIFICATE_NTDS_CA_SECURITY_EXT_OID = "1.3.6.1.4.1.311.25.2";
+    private static final String CERTIFICATE_NTDS_OBJECTSID_OID = "1.3.6.1.4.1.311.25.2.1";
+
     private static final Map<DNField, String> DNFieldToKey = new HashMap<DNField, String>() {{
         put(DNField.Email, "E");
         put(DNField.CommonName, "CN");
@@ -645,23 +651,48 @@ public class CertificateValidator {
         return new CertificatePolicies(PolicyInformation.getInstance(seq.getObjectAt(certificatePolicyPos)));
     }
 
-    //This is used for arbitrary OIDs with String values
-    public CertificateValidator hasOIDStringValue(String oid, String value)
-            throws CertificateValidatorException {
-
-        if (oid == null || value == null) {
-            throw new CertificateValidatorException("null value provided.");
+    //https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/e563cff8-1af6-4e6f-a655-7571ca482e71
+    public CertificateValidator hasMsObjectSid(String sid) {
+        if (sid == null) {
+            throw new CertificateValidatorException("sid is null");
         }
 
-        byte[] extensionValue = x509Certificate.getExtensionValue(oid);
+        byte[] extensionValue = x509Certificate.getExtensionValue(CERTIFICATE_NTDS_CA_SECURITY_EXT_OID);
         if (extensionValue == null) {
-            throw new CertificateValidatorException(oid + " does not exist.");
+            throw new CertificateValidatorException(CERTIFICATE_NTDS_CA_SECURITY_EXT_OID + " does not exist.");
         }
 
-        byte[] stringOctects = DEROctetString.getInstance(extensionValue).getOctets();
-        String str = DERUTF8String.getInstance(stringOctects).getString();
-        if (!value.equals(str)) {
-            throw new CertificateValidatorException("provided value " + value + " does not equal " + str);
+        DLTaggedObject dlTaggedObject;
+        try {
+            DEROctetString derOctetString = (DEROctetString) DEROctetString.fromByteArray(extensionValue);
+            DLSequence dlSequence = (DLSequence) ASN1Sequence.fromByteArray(derOctetString.getOctets());
+            dlTaggedObject = (DLTaggedObject) dlSequence.getObjectAt(0);
+        } catch (Exception e) {
+            throw new CertificateValidatorException("Invalid format", e);
+        }
+
+        DLSequence dlSequence1;
+        try {
+            dlSequence1 = (DLSequence) dlTaggedObject.getBaseObject();
+            ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) dlSequence1.getObjectAt(0);
+
+            if (!oid.getId().equals(CERTIFICATE_NTDS_OBJECTSID_OID)) {
+                throw new CertificateValidatorException("OID_NTDS_OBJECTSID not found. Found: " + oid.getId());
+            }
+        } catch (Exception e) {
+            throw new CertificateValidatorException("OID_NTDS_OBJECTSID not found", e);
+        }
+
+        try {
+            DLTaggedObject sidObject = (DLTaggedObject) dlSequence1.getObjectAt(1);
+            DEROctetString derOctetStringSid = (DEROctetString) sidObject.getBaseObject();
+            String certSid = new String(derOctetStringSid.getOctets(), StandardCharsets.UTF_8);
+            if (!sid.equals(certSid)) {
+                throw new CertificateValidatorException(certSid + " does not match " + sid);
+            }
+
+        } catch (Exception e) {
+            throw new CertificateValidatorException("Cannot read SID string.", e);
         }
 
         return this;
