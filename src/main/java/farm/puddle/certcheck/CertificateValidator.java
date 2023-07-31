@@ -479,6 +479,9 @@ public class CertificateValidator {
             throws CertificateValidatorException {
         try {
             final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
+            if( subjectAltNames == null ) {
+                throw new CertificateValidatorException("Subject Alternative Names is null");
+            }
 
             String certUPN = null;
             for (List<?> sanItem : subjectAltNames) {
@@ -490,7 +493,7 @@ public class CertificateValidator {
             }
 
             if (!upn.equals(certUPN)) {
-                throw new CertificateValidatorException("UPN " + upn + " does not exist.");
+                throw new CertificateValidatorException("UPN " + upn + " does not match " + certUPN);
             }
         } catch (Exception e) {
             throw new CertificateValidatorException(e);
@@ -502,6 +505,10 @@ public class CertificateValidator {
             throws CertificateValidatorException {
         try {
             final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
+            if( subjectAltNames == null ) {
+                throw new CertificateValidatorException("Subject Alternative Names is null");
+            }
+
             String certName = null;
             for (List<?> sanItem : subjectAltNames) {
                 Integer index = (Integer) sanItem.get(0);
@@ -512,7 +519,7 @@ public class CertificateValidator {
             }
 
             if (!name.equals(certName)) {
-                throw new CertificateValidatorException("RFC882Name " + name + " does not exist.");
+                throw new CertificateValidatorException("RFC882Name " + name + " does not match " + certName);
             }
         } catch (Exception e) {
             throw new CertificateValidatorException(e);
