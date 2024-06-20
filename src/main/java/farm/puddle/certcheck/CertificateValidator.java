@@ -266,14 +266,14 @@ public class CertificateValidator {
                 //...this is ridiculous
                 if (asn1Primitive instanceof DERTaggedObject) {
                     derTaggedObject = (DERTaggedObject) asn1Primitive;
-                    return ((DERTaggedObject) ((DLSequence) derTaggedObject.getObject()).getObjectAt(1)).getObject()
+                    return ((DERTaggedObject) ((DLSequence) derTaggedObject.getBaseObject()).getObjectAt(1)).getBaseObject()
                             .toString();
                 } else if (asn1Primitive instanceof DLSequence) {
                     DLSequence dlSequence = (DLSequence) asn1Primitive;
                     derTaggedObject = (DERTaggedObject) dlSequence.getObjectAt(1);
-                    return ((DERTaggedObject) derTaggedObject.getObject()).getObject().toString();
+                    return ((DERTaggedObject) derTaggedObject.getBaseObject()).getBaseObject().toString();
                 } else if (asn1Primitive instanceof DLTaggedObject) {
-                    return ((DLTaggedObject) ((DLSequence) ((DLTaggedObject) asn1Primitive).getObject()).getObjectAt(1)).getObject().toString();
+                    return ((DLTaggedObject) ((DLSequence) ((DLTaggedObject) asn1Primitive).getBaseObject()).getObjectAt(1)).getBaseObject().toString();
                 }
             } else if (item instanceof String) {
                 return (String) item;
