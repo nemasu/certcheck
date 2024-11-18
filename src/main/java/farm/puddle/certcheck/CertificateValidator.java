@@ -17,6 +17,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.util.Selector;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
@@ -33,48 +34,54 @@ public class CertificateValidator {
     private static final String CERTIFICATE_POLICY_OID = "2.5.29.32";
     private static final String CERTIFICATE_SUBJECT_KEY_IDENTIFIER_OID = "2.5.29.14";
 
-    //See https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/e563cff8-1af6-4e6f-a655-7571ca482e71
+    // See
+    // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/e563cff8-1af6-4e6f-a655-7571ca482e71
     private static final String CERTIFICATE_NTDS_CA_SECURITY_EXT_OID = "1.3.6.1.4.1.311.25.2";
     private static final String CERTIFICATE_NTDS_OBJECTSID_OID = "1.3.6.1.4.1.311.25.2.1";
 
-    private static final Map<DNField, String> DNFieldToKey = new HashMap<DNField, String>() {{
-        put(DNField.Email, "E");
-        put(DNField.CommonName, "CN");
-        put(DNField.OrganizationalUnit, "OU");
-        put(DNField.Organization, "O");
-        put(DNField.Locality, "L");
-        put(DNField.State, "ST");
-        put(DNField.Country, "C");
-        put(DNField.Surname, "SURNAME");
-        put(DNField.GivenName, "GIVENNAME");
-        put(DNField.OrganizationIdentifier, "organizationIdentifier");
-        put(DNField.SerialNumber, "SERIALNUMBER");
+    private static final Map<DNField, String> DNFieldToKey = new HashMap<DNField, String>() {
+        {
+            put(DNField.Email, "E");
+            put(DNField.CommonName, "CN");
+            put(DNField.OrganizationalUnit, "OU");
+            put(DNField.Organization, "O");
+            put(DNField.Locality, "L");
+            put(DNField.State, "ST");
+            put(DNField.Country, "C");
+            put(DNField.Surname, "SURNAME");
+            put(DNField.GivenName, "GIVENNAME");
+            put(DNField.OrganizationIdentifier, "organizationIdentifier");
+            put(DNField.SerialNumber, "SERIALNUMBER");
+            put(DNField.Pseudonym, "Pseudonym");
 
-    }};
+        }
+    };
     /*
-        KeyUsage ::= BIT STRING {
-               digitalSignature        (0),
-               nonRepudiation          (1),
-               keyEncipherment         (2),
-               dataEncipherment        (3),
-               keyAgreement            (4),
-               keyCertSign             (5),
-               cRLSign                 (6),
-               encipherOnly            (7),
-               decipherOnly            (8) }
+     * KeyUsage ::= BIT STRING {
+     * digitalSignature (0),
+     * nonRepudiation (1),
+     * keyEncipherment (2),
+     * dataEncipherment (3),
+     * keyAgreement (4),
+     * keyCertSign (5),
+     * cRLSign (6),
+     * encipherOnly (7),
+     * decipherOnly (8) }
      */
-    private static final Map<KUField, Integer> KUFieldToKey = new HashMap<KUField, Integer>() {{
-        put(KUField.digitalSignature, 0);
-        put(KUField.nonRepudiation, 1);
-        put(KUField.keyEncipherment, 2);
-        put(KUField.dataEncipherment, 3);
-        put(KUField.keyAgreement, 4);
-        put(KUField.keyCertSign, 5);
-        put(KUField.cRLSign, 6);
-        put(KUField.encipherOnly, 7);
-        put(KUField.decipherOnly, 8);
+    private static final Map<KUField, Integer> KUFieldToKey = new HashMap<KUField, Integer>() {
+        {
+            put(KUField.digitalSignature, 0);
+            put(KUField.nonRepudiation, 1);
+            put(KUField.keyEncipherment, 2);
+            put(KUField.dataEncipherment, 3);
+            put(KUField.keyAgreement, 4);
+            put(KUField.keyCertSign, 5);
+            put(KUField.cRLSign, 6);
+            put(KUField.encipherOnly, 7);
+            put(KUField.decipherOnly, 8);
 
-    }};
+        }
+    };
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -86,6 +93,7 @@ public class CertificateValidator {
     private Map<String, List<String>> subjectPrincipal;
     private Map<String, List<String>> issuerPrincipal;
 
+    @SuppressWarnings("unused")
     private CertificateValidator() {
     }
 
@@ -95,7 +103,7 @@ public class CertificateValidator {
         issuerPrincipal = getPrincipal(x509Certificate.getIssuerX500Principal());
     }
 
-    //TODO factor this out with pem from file ctor.
+    // TODO factor this out with pem from file ctor.
     public CertificateValidator(String pemString)
             throws CertificateValidatorException,
             CertificateException,
@@ -107,7 +115,8 @@ public class CertificateValidator {
             PemObject pemObject;
             CertificateType certificateType = null;
 
-            //TODO We're just reading the top one, maybe add a skip number or a matcher or something?
+            // TODO We're just reading the top one, maybe add a skip number or a matcher or
+            // something?
             while ((pemObject = reader.readPemObject()) != null) {
 
                 if ("CERTIFICATE".equals(pemObject.getType())) {
@@ -116,7 +125,7 @@ public class CertificateValidator {
                 }
 
                 if ("PKCS7".equals(pemObject.getType())) {
-                    //Reopen stream for PEMParser.
+                    // Reopen stream for PEMParser.
                     certificateType = CertificateType.PKCS7;
                     reader.close();
                     stringReader.close();
@@ -134,8 +143,9 @@ public class CertificateValidator {
             switch (certificateType) {
                 case PEM:
                     x509CertificateHolder = new X509CertificateHolder(pemObject.getContent());
-                    x509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(
-                            x509CertificateHolder);
+                    x509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                            .getCertificate(
+                                    x509CertificateHolder);
                     break;
                 case PKCS7:
                     PEMParser pemParser = new PEMParser(reader);
@@ -143,13 +153,15 @@ public class CertificateValidator {
                     ContentInfo cmsContentInfo = (ContentInfo) pemParser.readObject();
 
                     CMSSignedData cmsSignedData = new CMSSignedData(cmsContentInfo.getEncoded());
-                    Store store = cmsSignedData.getCertificates();
-                    Collection<X509CertificateHolder> x509CertificateHolderCollection = store.getMatches(null);
+                    Store<X509CertificateHolder> store = cmsSignedData.getCertificates();
+                    Collection<X509CertificateHolder> x509CertificateHolderCollection = store.getMatches((Selector<X509CertificateHolder>) null);
 
-                    //TODO We're just reading the top one, maybe add a skip number or a matcher or something?
+                    // TODO We're just reading the top one, maybe add a skip number or a matcher or
+                    // something?
                     x509CertificateHolder = x509CertificateHolderCollection.iterator().next();
-                    x509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(
-                            x509CertificateHolder);
+                    x509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                            .getCertificate(
+                                    x509CertificateHolder);
                     break;
                 default:
                     break;
@@ -163,7 +175,7 @@ public class CertificateValidator {
         }
     }
 
-    //TODO - need pkcs12 from file.
+    // TODO - need pkcs12 from file.
 
     public CertificateValidator(File pemFile)
             throws CertificateValidatorException,
@@ -176,7 +188,8 @@ public class CertificateValidator {
             PemObject pemObject;
             CertificateType certificateType = null;
 
-            //TODO We're just reading the top one, maybe add a skip number or a matcher or something?
+            // TODO We're just reading the top one, maybe add a skip number or a matcher or
+            // something?
             while ((pemObject = reader.readPemObject()) != null) {
 
                 if ("CERTIFICATE".equals(pemObject.getType())) {
@@ -185,7 +198,7 @@ public class CertificateValidator {
                 }
 
                 if ("PKCS7".equals(pemObject.getType())) {
-                    //Reopen file for PEMParser.
+                    // Reopen file for PEMParser.
                     certificateType = CertificateType.PKCS7;
                     reader.close();
                     fileReader.close();
@@ -203,8 +216,9 @@ public class CertificateValidator {
             switch (certificateType) {
                 case PEM:
                     x509CertificateHolder = new X509CertificateHolder(pemObject.getContent());
-                    x509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(
-                            x509CertificateHolder);
+                    x509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                            .getCertificate(
+                                    x509CertificateHolder);
                     break;
                 case PKCS7:
                     PEMParser pemParser = new PEMParser(reader);
@@ -212,13 +226,15 @@ public class CertificateValidator {
                     ContentInfo cmsContentInfo = (ContentInfo) pemParser.readObject();
 
                     CMSSignedData cmsSignedData = new CMSSignedData(cmsContentInfo.getEncoded());
-                    Store store = cmsSignedData.getCertificates();
-                    Collection<X509CertificateHolder> x509CertificateHolderCollection = store.getMatches(null);
+                    Store<X509CertificateHolder> store = cmsSignedData.getCertificates();
+                    Collection<X509CertificateHolder> x509CertificateHolderCollection = store.getMatches((Selector<X509CertificateHolder>) null);
 
-                    //TODO We're just reading the top one, maybe add a skip number or a matcher or something?
+                    // TODO We're just reading the top one, maybe add a skip number or a matcher or
+                    // something?
                     x509CertificateHolder = x509CertificateHolderCollection.iterator().next();
-                    x509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(
-                            x509CertificateHolder);
+                    x509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                            .getCertificate(
+                                    x509CertificateHolder);
                     break;
                 default:
                     break;
@@ -240,7 +256,8 @@ public class CertificateValidator {
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             InputStream inputStream = new ByteArrayInputStream(decodedCert);
             keyStore.load(inputStream, password.toCharArray());
-            //TODO We're just reading the top one, maybe add a skip number or a matcher or something?
+            // TODO We're just reading the top one, maybe add a skip number or a matcher or
+            // something?
             java.security.cert.Certificate certificate = keyStore.getCertificate("1");
             if (certificate instanceof X509Certificate) {
                 x509Certificate = (X509Certificate) certificate;
@@ -263,17 +280,19 @@ public class CertificateValidator {
                 ASN1Primitive asn1Primitive = decoder.readObject();
 
                 DERTaggedObject derTaggedObject = null;
-                //...this is ridiculous
+                // ...this is ridiculous
                 if (asn1Primitive instanceof DERTaggedObject) {
                     derTaggedObject = (DERTaggedObject) asn1Primitive;
-                    return ((DERTaggedObject) ((DLSequence) derTaggedObject.getBaseObject()).getObjectAt(1)).getBaseObject()
+                    return ((DERTaggedObject) ((DLSequence) derTaggedObject.getBaseObject()).getObjectAt(1))
+                            .getBaseObject()
                             .toString();
                 } else if (asn1Primitive instanceof DLSequence) {
                     DLSequence dlSequence = (DLSequence) asn1Primitive;
                     derTaggedObject = (DERTaggedObject) dlSequence.getObjectAt(1);
                     return ((DERTaggedObject) derTaggedObject.getBaseObject()).getBaseObject().toString();
                 } else if (asn1Primitive instanceof DLTaggedObject) {
-                    return ((DLTaggedObject) ((DLSequence) ((DLTaggedObject) asn1Primitive).getBaseObject()).getObjectAt(1)).getBaseObject().toString();
+                    return ((DLTaggedObject) ((DLSequence) ((DLTaggedObject) asn1Primitive).getBaseObject())
+                            .getObjectAt(1)).getBaseObject().toString();
                 }
             } else if (item instanceof String) {
                 return (String) item;
@@ -308,8 +327,8 @@ public class CertificateValidator {
             throws CertificateValidatorException {
         try {
             x509Certificate.verify(publicKey);
-        } catch (NoSuchProviderException | CertificateException | NoSuchAlgorithmException | InvalidKeyException |
-                 SignatureException e) {
+        } catch (NoSuchProviderException | CertificateException | NoSuchAlgorithmException | InvalidKeyException
+                | SignatureException e) {
             throw new CertificateValidatorException(e);
         }
         return this;
@@ -326,7 +345,8 @@ public class CertificateValidator {
     public CertificateValidator equalsSerialNumber(BigInteger serialNumber)
             throws CertificateValidatorException {
         if (!x509Certificate.getSerialNumber().equals(serialNumber)) {
-            throw new CertificateValidatorException(x509Certificate.getSerialNumber() + " does not match " + serialNumber);
+            throw new CertificateValidatorException(
+                    x509Certificate.getSerialNumber() + " does not match " + serialNumber);
         }
         return this;
     }
@@ -336,7 +356,8 @@ public class CertificateValidator {
         try {
             x509Certificate.checkValidity(date);
         } catch (CertificateNotYetValidException | CertificateExpiredException e) {
-            throw new CertificateValidatorException(date.toString() + " is not within certificates validity period.", e);
+            throw new CertificateValidatorException(date.toString() + " is not within certificates validity period.",
+                    e);
         }
 
         return this;
@@ -347,7 +368,8 @@ public class CertificateValidator {
         String key = DNFieldToKey.get(dnField);
 
         if (!subjectPrincipal.get(key).equals(k)) {
-            throw new CertificateValidatorException(dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
+            throw new CertificateValidatorException(
+                    dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
@@ -358,7 +380,8 @@ public class CertificateValidator {
 
         List<String> sn = subjectPrincipal.get(key);
         if (sn == null || !(sn.size() == 1 && sn.contains(k))) {
-            throw new CertificateValidatorException(dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
+            throw new CertificateValidatorException(
+                    dnField.name() + " " + subjectPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
@@ -383,7 +406,8 @@ public class CertificateValidator {
         String key = DNFieldToKey.get(dnField);
 
         if (!issuerPrincipal.get(key).equals(k)) {
-            throw new CertificateValidatorException(dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
+            throw new CertificateValidatorException(
+                    dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
@@ -394,7 +418,8 @@ public class CertificateValidator {
 
         List<String> sn = issuerPrincipal.get(key);
         if (sn == null || !(sn.size() == 1 && sn.contains(k))) {
-            throw new CertificateValidatorException(dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
+            throw new CertificateValidatorException(
+                    dnField.name() + " " + issuerPrincipal.get(key) + " does not equal " + k);
         }
         return this;
     }
@@ -464,29 +489,29 @@ public class CertificateValidator {
     }
 
     /*
-        GeneralName ::= CHOICE {
-            otherName                       [0]     OtherName,
-            rfc822Name                      [1]     IA5String,
-            dNSName                         [2]     IA5String,
-            x400Address                     [3]     ORAddress,
-            directoryName                   [4]     Name,
-            ediPartyName                    [5]     EDIPartyName,
-            uniformResourceIdentifier       [6]     IA5String,
-            iPAddress                       [7]     OCTET STRING,
-            registeredID                    [8]     OBJECT IDENTIFIER}
+     * GeneralName ::= CHOICE {
+     * otherName [0] OtherName,
+     * rfc822Name [1] IA5String,
+     * dNSName [2] IA5String,
+     * x400Address [3] ORAddress,
+     * directoryName [4] Name,
+     * ediPartyName [5] EDIPartyName,
+     * uniformResourceIdentifier [6] IA5String,
+     * iPAddress [7] OCTET STRING,
+     * registeredID [8] OBJECT IDENTIFIER}
      */
     public CertificateValidator hasUPN(String upn)
             throws CertificateValidatorException {
         try {
             final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
-            if( subjectAltNames == null ) {
+            if (subjectAltNames == null) {
                 throw new CertificateValidatorException("Subject Alternative Names is null");
             }
 
             String certUPN = null;
             for (List<?> sanItem : subjectAltNames) {
                 Integer index = (Integer) sanItem.get(0);
-                if (index == 0) { //otherName is UPN
+                if (index == 0) { // otherName is UPN
                     certUPN = getStringFromSanObject(sanItem.get(1));
                     break;
                 }
@@ -505,7 +530,7 @@ public class CertificateValidator {
             throws CertificateValidatorException {
         try {
             final Collection<List<?>> subjectAltNames = x509Certificate.getSubjectAlternativeNames();
-            if( subjectAltNames == null ) {
+            if (subjectAltNames == null) {
                 throw new CertificateValidatorException("Subject Alternative Names is null");
             }
 
@@ -541,13 +566,14 @@ public class CertificateValidator {
         String keyIdentifierString = Hex.toHexString(keyIdentifierBytes).toLowerCase();
 
         if (!s.toLowerCase().equals(keyIdentifierString)) {
-            throw new CertificateValidatorException("Subject Key Identifier " + s + " does not exist. It is " + keyIdentifierString);
+            throw new CertificateValidatorException(
+                    "Subject Key Identifier " + s + " does not exist. It is " + keyIdentifierString);
         }
 
         return this;
     }
 
-    //Note: Positions start at 0.
+    // Note: Positions start at 0.
     public CertificateValidator hasCertificatePolicy(int policyPosition, String policy)
             throws CertificateValidatorException {
         if (policy == null) {
@@ -571,7 +597,8 @@ public class CertificateValidator {
         return this;
     }
 
-    public CertificateValidator hasCertificatePolicyQualifier(int policyPosition, List<Integer> location, String qualifier)
+    public CertificateValidator hasCertificatePolicyQualifier(int policyPosition, List<Integer> location,
+            String qualifier)
             throws CertificateValidatorException {
         if (qualifier == null) {
             throw new CertificateValidatorException("qualifier is null");
@@ -613,7 +640,8 @@ public class CertificateValidator {
             return null;
         }
 
-        //Note: ID always seems to be at position 0, I can't seem to add multiple either so...hardcode it for now.
+        // Note: ID always seems to be at position 0, I can't seem to add multiple
+        // either so...hardcode it for now.
         return policyInformation[0].getPolicyIdentifier().getId();
     }
 
@@ -648,8 +676,14 @@ public class CertificateValidator {
             return null;
         }
 
-        DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extPolicyBytes)).readObject());
-        ASN1Sequence seq = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject();
+        DEROctetString oct;
+        try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extPolicyBytes))) {
+            oct = (DEROctetString) asn1InputStream.readObject();
+        }
+        ASN1Sequence seq;
+        try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()))) {
+            seq = (ASN1Sequence) asn1InputStream.readObject();
+        }
 
         if (seq.size() <= (certificatePolicyPos)) {
             return null;
@@ -658,7 +692,7 @@ public class CertificateValidator {
         return new CertificatePolicies(PolicyInformation.getInstance(seq.getObjectAt(certificatePolicyPos)));
     }
 
-    //https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/e563cff8-1af6-4e6f-a655-7571ca482e71
+    // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/e563cff8-1af6-4e6f-a655-7571ca482e71
     public CertificateValidator hasMsObjectSid(String sid) {
         if (sid == null) {
             throw new CertificateValidatorException("sid is null");
@@ -716,7 +750,8 @@ public class CertificateValidator {
         Surname,
         GivenName,
         OrganizationIdentifier,
-        SerialNumber
+        SerialNumber,
+        Pseudonym,
     }
 
     public enum KUField {
@@ -728,6 +763,6 @@ public class CertificateValidator {
         keyCertSign,
         cRLSign,
         encipherOnly,
-        decipherOnly
+        decipherOnly,
     }
 }

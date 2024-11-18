@@ -29,3 +29,6 @@ nb-configuration.xml
 *.iml
 *.eml
 .idea/
+
+*.key
+*.srl
